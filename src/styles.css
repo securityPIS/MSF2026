@@ -379,15 +379,6 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .cam-error, .busy { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 1.5rem; text-align: center; background: rgba(3, 16, 58, 0.9); color: var(--muted); font-size: 0.9rem; }
 .busy { color: #fff; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.04em; }
 .scan-count { margin: 0; color: var(--muted); font-size: 0.82rem; text-align: center; }
-.manual { padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); }
-.manual summary { font-weight: 700; cursor: pointer; }
-.manual-body { display: grid; gap: 0.75rem; margin-top: 0.85rem; }
-.manual-row { display: flex; gap: 0.5rem; }
-.hits { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
-.hits li { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--r); background: rgba(3, 16, 58, 0.5); }
-.hits li div { display: grid; min-width: 0; }
-.hits li strong { overflow-wrap: anywhere; }
-.hits li span { color: var(--muted); font-size: 0.8rem; }
 
 /* Layar hasil scan: satu warna penuh, terbaca dari jarak satu lengan */
 .overlay {

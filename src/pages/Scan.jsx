@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { supabase } from '../lib/supabase.js'
 import { feedback } from '../lib/feedback.js'
-import { cleanTerm, formatTime } from '../lib/format.js'
+import { formatTime } from '../lib/format.js'
 import KindIcon from '../components/KindIcon.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { canCheckpoint } from '../lib/permissions.js'
@@ -53,11 +53,11 @@ export default function Scan() {
   }, [])
 
   const submitCode = useCallback(
-    async (raw, { manual = false } = {}) => {
+    async (raw) => {
       const code = String(raw || '').trim().toLowerCase()
       if (!code || !cpRef.current || lockRef.current) return
       const now = Date.now()
-      if (!manual && code === lastRef.current.code && now - lastRef.current.t < SAME_CODE_COOLDOWN) return
+      if (code === lastRef.current.code && now - lastRef.current.t < SAME_CODE_COOLDOWN) return
 
       lastRef.current = { code, t: now }
       lockRef.current = true
@@ -138,8 +138,6 @@ export default function Scan() {
 
       <p className="scan-count">{okCount} check-in berhasil sejak halaman ini dibuka</p>
 
-      <ManualEntry onSubmit={submitCode} disabled={busy || !cpId} />
-
       {result && <ResultOverlay result={result} checkpoint={current} onClose={dismiss} />}
     </div>
   )
@@ -149,7 +147,7 @@ function describeCameraError(err) {
   const msg = String(err?.message || err)
   if (!window.isSecureContext) return 'Kamera hanya bisa dipakai lewat HTTPS. Buka aplikasi dengan alamat https://.'
   if (/NotAllowed|Permission/i.test(msg)) return 'Izin kamera ditolak. Izinkan akses kamera di pengaturan browser, lalu muat ulang halaman.'
-  if (/NotFound|Requested device not found/i.test(msg)) return 'Kamera tidak ditemukan di perangkat ini. Gunakan pencarian manual di bawah.'
+  if (/NotFound|Requested device not found/i.test(msg)) return 'Kamera tidak ditemukan di perangkat ini. Pakai perangkat yang punya kamera.'
   if (/NotReadable|in use/i.test(msg)) return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi tersebut, lalu muat ulang halaman.'
   return `Kamera tidak bisa dibuka: ${msg}`
 }
@@ -199,72 +197,5 @@ function ResultOverlay({ result, checkpoint, onClose }) {
         <button className="overlay-btn" onClick={onClose} autoFocus>Approve</button>
       </div>
     </div>
-  )
-}
-
-function ManualEntry({ onSubmit, disabled }) {
-  const [code, setCode] = useState('')
-  const [q, setQ] = useState('')
-  const [hits, setHits] = useState([])
-
-  useEffect(() => {
-    const term = cleanTerm(q)
-    if (term.length < 2) {
-      setHits([])
-      return
-    }
-    const t = setTimeout(async () => {
-      const { data } = await supabase
-        .from('participants')
-        .select('id,qr_code,full_name,organization')
-        .ilike('full_name', `%${term}%`)
-        .order('full_name')
-        .limit(8)
-      setHits(data || [])
-    }, 250)
-    return () => clearTimeout(t)
-  }, [q])
-
-  return (
-    <details className="manual">
-      <summary>QR tidak terbaca? Cari manual</summary>
-      <div className="manual-body">
-        <form
-          className="manual-row"
-          onSubmit={(e) => {
-            e.preventDefault()
-            onSubmit(code, { manual: true })
-            setCode('')
-          }}
-        >
-          <input
-            aria-label="Unique ID"
-            placeholder="Ketik Unique ID"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-          />
-          <button className="btn" disabled={disabled || !code.trim()}>Check-in</button>
-        </form>
-        <input aria-label="Cari nama peserta" type="search" placeholder="Cari nama peserta" value={q} onChange={(e) => setQ(e.target.value)} />
-        {hits.length > 0 && (
-          <ul className="hits">
-            {hits.map((h) => (
-              <li key={h.id}>
-                <div>
-                  <strong>{h.full_name}</strong>
-                  {h.organization && <span>{h.organization}</span>}
-                </div>
-                <button className="btn" disabled={disabled} onClick={() => onSubmit(h.qr_code, { manual: true })}>
-                  Check-in
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </details>
   )
 }

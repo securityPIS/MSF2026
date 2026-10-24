@@ -102,7 +102,7 @@ Kolom Unique ID harus berupa **teks** (contoh `e883d05a5a`), bukan gambar QR.
 ```
 supabase/schema.sql      tabel, RLS, fungsi check-in, statistik, realtime
 supabase/seed.sql        checkpoint awal + peserta uji
-src/pages/Scan.jsx       scanner petugas + layar hasil + pencarian manual
+src/pages/Scan.jsx       scanner petugas + layar hasil
 src/pages/admin/*        dashboard, peserta, impor, checkpoint, petugas
 src/pages/ParticipantHistory.jsx   halaman publik peserta
 ```
