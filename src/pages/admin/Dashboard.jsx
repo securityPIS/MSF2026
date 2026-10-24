@@ -12,6 +12,9 @@ const FEED_PAGE = 5
 export default function Dashboard() {
   const { profile } = useAuth()
   const scoped = isCheckpointScoped(profile)
+  const isAdmin = profile?.role === 'admin'
+  const [resetting, setResetting] = useState(false)
+  const [notice, setNotice] = useState('')
   const [stats, setStats] = useState(null)
   const [error, setError] = useState('')
   const [live, setLive] = useState(false)
@@ -132,7 +135,24 @@ export default function Dashboard() {
       )}
 
       <section>
-        <h2>Per checkpoint</h2>
+        <div className="section-head">
+          <h2>Per checkpoint</h2>
+          {isAdmin && !resetting && (
+            <button className="btn btn-danger btn-sm" onClick={() => { setResetting(true); setNotice('') }}>Reset</button>
+          )}
+        </div>
+        {resetting && (
+          <ResetCheckpoints
+            checkpoints={stats.checkpoints}
+            onCancel={() => setResetting(false)}
+            onDone={(names) => {
+              setResetting(false)
+              setNotice(`Check-in di ${names.join(', ')} sudah direset.`)
+              load()
+            }}
+          />
+        )}
+        {notice && <p className="notice ok" role="status">{notice}</p>}
         <ul className="cards cols cp-list">
           {stats.checkpoints.map((c) => (
             <li key={c.id} className={`card cp-row ${c.is_active ? '' : 'muted'}`}>
@@ -155,6 +175,56 @@ export default function Dashboard() {
         <h2>Check-in terbaru</h2>
         <RecentFeed tick={tick} />
       </section>
+    </div>
+  )
+}
+
+// Hapus semua check-in di checkpoint yang dipilih (hanya admin; dijaga policy checkins_admin_delete)
+function ResetCheckpoints({ checkpoints, onCancel, onDone }) {
+  const [picked, setPicked] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+
+  async function reset() {
+    setBusy(true)
+    setError('')
+    const done = []
+    for (const c of checkpoints.filter((x) => picked.includes(x.id))) {
+      const { error } = await supabase.from('checkins').delete().eq('checkpoint_id', c.id)
+      if (error) {
+        setBusy(false)
+        setError(`Reset ${c.name} gagal: ${error.message}${done.length ? `. Yang sudah direset: ${done.join(', ')}.` : ''}`)
+        return
+      }
+      done.push(c.name)
+    }
+    setBusy(false)
+    onDone(done)
+  }
+
+  return (
+    <div className="panel reset-panel">
+      <p className="hint">Pilih checkpoint yang mau direset. Semua check-in di checkpoint itu akan dihapus dan tidak bisa dikembalikan.</p>
+      <div className="reset-list">
+        {checkpoints.map((c) => (
+          <label key={c.id} className="check-card">
+            <input type="checkbox" checked={picked.includes(c.id)} onChange={() => toggle(c.id)} disabled={busy} />
+            <KindIcon kind={c.kind} size="sm" />
+            <span>
+              <b>{c.name}</b>
+              <small>{c.total_scans} check-in</small>
+            </span>
+          </label>
+        ))}
+      </div>
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <div className="form-actions">
+        <button className="btn" onClick={onCancel} disabled={busy}>Batal</button>
+        <button className="btn btn-danger-solid" onClick={reset} disabled={busy || picked.length === 0}>
+          {busy ? 'Mereset…' : 'OK RESET'}
+        </button>
+      </div>
     </div>
   )
 }

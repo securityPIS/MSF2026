@@ -9,7 +9,7 @@ import { useAuth } from '../../lib/auth.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import { canAddParticipants } from '../../lib/permissions.js'
 
-const PAGE = 20
+const PAGE = 5
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const CATEGORIES = ['Umum', 'VIP', 'Pembicara', 'Media', 'Panitia']
 

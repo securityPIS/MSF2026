@@ -192,8 +192,8 @@ label.check { display: flex; align-items: center; gap: 0.6rem; color: var(--text
   h1 { font-size: 1.9rem; }
 }
 section { margin-top: 1.75rem; }
-section > h2 { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; }
-section > h2::before { content: ''; width: 4px; height: 1.1em; border-radius: 2px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+section > h2, .section-head > h2 { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; }
+section > h2::before, .section-head > h2::before { content: ''; width: 4px; height: 1.1em; border-radius: 2px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
 .hint { color: var(--muted); font-size: 0.85rem; }
 .empty { color: var(--muted); }
 .panel {
@@ -613,6 +613,13 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .check-card:has(input:checked) { border-color: var(--cyan); background: color-mix(in srgb, var(--cyan) 10%, var(--field)); }
 .check-card.sub { margin-left: 1.25rem; }
 .check-card.disabled { opacity: 0.5; cursor: not-allowed; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+.section-head > h2 { margin: 0; }
+.btn-sm { min-height: 36px; padding: 0.35rem 0.9rem; font-size: 0.82rem; }
+.reset-panel { margin-bottom: 1rem; }
+.reset-panel .hint { margin-top: 0; }
+.reset-list { display: grid; gap: 0.5rem; }
+@media (min-width: 640px) { .reset-list { grid-template-columns: repeat(2, 1fr); } }
 .perm-block { display: grid; gap: 0.35rem; }
 .perm-label { color: var(--muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 

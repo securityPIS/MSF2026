@@ -7,8 +7,8 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 
 ## Peran
 
-- **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas, batalkan check-in.
-- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
+- **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas, batalkan check-in, reset semua check-in per checkpoint dari Dashboard.
+- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya, lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
 - **Peserta**: tanpa login. Riwayat check-in bisa dibuka di `/p/<kode-qr>`.
 
 ## Role akses

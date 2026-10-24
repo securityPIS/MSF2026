@@ -23,7 +23,6 @@ export default function Scan() {
   const cpRef = useRef(cpId)
   const lockRef = useRef(false)
   const lastRef = useRef({ code: '', t: 0 })
-  const timerRef = useRef(null)
 
   useEffect(() => {
     cpRef.current = cpId
@@ -46,8 +45,8 @@ export default function Scan() {
       })
   }, [profile])
 
+  // Hasil scan tetap tampil sampai petugas menekan Approve
   const dismiss = useCallback(() => {
-    clearTimeout(timerRef.current)
     lastRef.current = { ...lastRef.current, t: Date.now() }
     setResult(null)
     lockRef.current = false
@@ -73,10 +72,8 @@ export default function Scan() {
       setResult(res)
       feedback(res.status)
       if (res.status === 'ok') setOkCount((n) => n + 1)
-      clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(dismiss, res.status === 'ok' ? 2200 : 4500)
     },
-    [dismiss]
+    []
   )
 
   useEffect(() => {
@@ -108,7 +105,6 @@ export default function Scan() {
 
     return () => {
       cancelled = true
-      clearTimeout(timerRef.current)
       if (scanner.isScanning) scanner.stop().then(() => scanner.clear()).catch(() => {})
     }
   }, [submitCode])
@@ -183,7 +179,7 @@ function ResultOverlay({ result, checkpoint, onClose }) {
   else if (result.status === 'error') detail = `${result.message}. Periksa koneksi internet, lalu scan ulang.`
 
   return (
-    <div className={`overlay tone-${copy.tone}`} role="alertdialog" aria-live="assertive" onClick={onClose}>
+    <div className={`overlay tone-${copy.tone}`} role="alertdialog" aria-live="assertive">
       <div className="overlay-inner">
         <p className="overlay-status">{copy.title}</p>
         {p && (
@@ -200,7 +196,7 @@ function ResultOverlay({ result, checkpoint, onClose }) {
             {checkpoint.name}
           </p>
         )}
-        <button className="overlay-btn" onClick={onClose}>Scan berikutnya</button>
+        <button className="overlay-btn" onClick={onClose} autoFocus>Approve</button>
       </div>
     </div>
   )
