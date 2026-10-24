@@ -83,7 +83,7 @@ function seed() {
     ['5c61818ba6', 'Sigit Wibowo', 'TNI AL', 'Umum'],
   ]
   const participants = people.map(([qr_code, full_name, organization, category]) => ({
-    id: uid(), qr_code, full_name, organization, category, email: null, phone: null,
+    id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, email: null, phone: null,
     created_at: ago(3000), updated_at: ago(3000),
   }))
 
@@ -354,7 +354,7 @@ class Query {
 const DEFAULTS = {
   participants: (now) => ({
     qr_code: uid().replace(/-/g, '').slice(0, 10),
-    updated_at: now, organization: null, email: null, phone: null, category: null,
+    updated_at: now, organization: null, division: null, job_title: null, email: null, phone: null, category: null,
   }),
 }
 

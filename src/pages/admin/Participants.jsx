@@ -109,7 +109,7 @@ export default function Participants() {
         className="search"
         type="search"
         aria-label="Cari peserta"
-        placeholder="Cari nama, instansi, atau kode QR"
+        placeholder="Cari nama, company, atau kode QR"
         value={q}
         onChange={(e) => {
           setQ(e.target.value)
@@ -179,7 +179,7 @@ async function findByCode(code) {
 }
 
 function AddParticipant({ onCancel, onCreated }) {
-  const [f, setF] = useState({ full_name: '', organization: '', category: 'Umum', email: '', phone: '', qr_code: '' })
+  const [f, setF] = useState({ full_name: '', organization: '', division: '', job_title: '', category: 'Umum', email: '', phone: '', qr_code: '' })
   const [busy, setBusy] = useState(false)
   const [reading, setReading] = useState(false)
   const [qrNote, setQrNote] = useState(null)
@@ -216,7 +216,11 @@ function AddParticipant({ onCancel, onCreated }) {
     setBusy(true)
     setError('')
     const payload = { full_name: f.full_name.trim() }
-    for (const k of ['organization', 'category', 'email', 'phone']) payload[k] = f[k].trim() || null
+    // Isian kosong tidak dikirim, kolomnya otomatis null di database
+    for (const k of ['organization', 'division', 'job_title', 'category', 'email', 'phone']) {
+      const v = f[k].trim()
+      if (v) payload[k] = v
+    }
     if (ownCode) payload.qr_code = ownCode
 
     // Tanpa kode sendiri, kode QR dibuat otomatis oleh database. Kalau kebetulan bentrok dengan kode lain, coba lagi.
@@ -273,8 +277,16 @@ function AddParticipant({ onCancel, onCreated }) {
         <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder="Contoh: Budi Santoso" />
       </label>
       <label className="full">
-        Instansi
+        Company
         <input value={f.organization} onChange={(e) => set('organization', e.target.value)} placeholder="Contoh: Bakamla RI" />
+      </label>
+      <label>
+        Division
+        <input value={f.division} onChange={(e) => set('division', e.target.value)} placeholder="Contoh: Operasi Laut" />
+      </label>
+      <label>
+        Job Title
+        <input value={f.job_title} onChange={(e) => set('job_title', e.target.value)} placeholder="Contoh: Kepala Seksi" />
       </label>
       <label>
         Kategori
@@ -369,7 +381,9 @@ function ParticipantDetail({ id, canCancel, onBack }) {
       <button className="btn-ghost detail-back" onClick={onBack}>← Kembali ke daftar</button>
       <h2>{p.full_name}</h2>
       <dl>
-        <div><dt>Instansi</dt><dd>{p.organization || '-'}</dd></div>
+        <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
+        <div><dt>Division</dt><dd>{p.division || '-'}</dd></div>
+        <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
         <div><dt>Kategori</dt><dd>{p.category || '-'}</dd></div>
         <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
         <div><dt>Telepon</dt><dd>{p.phone || '-'}</dd></div>

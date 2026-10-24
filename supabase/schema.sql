@@ -34,7 +34,9 @@ create table public.participants (
   qr_code       text not null unique default substr(replace(gen_random_uuid()::text, '-', ''), 1, 10)
                 check (qr_code = lower(btrim(qr_code)) and qr_code <> ''),
   full_name     text not null,
-  organization  text,
+  organization  text,          -- tampil sebagai "Company" di aplikasi
+  division      text,
+  job_title     text,
   email         text,
   phone         text,
   category      text,

@@ -6,13 +6,15 @@ import { supabase } from '../../lib/supabase.js'
 const FIELDS = [
   { key: 'qr_code', label: 'Kode QR', required: true, guess: ['kode qr', 'qr code', 'qr', 'barcode', 'kode', 'code', 'token'] },
   { key: 'full_name', label: 'Nama', required: true, guess: ['nama', 'nama lengkap', 'name', 'full name'] },
-  { key: 'organization', label: 'Instansi', guess: ['instansi', 'organisasi', 'organization', 'perusahaan', 'company', 'institusi'] },
+  { key: 'organization', label: 'Company', guess: ['company', 'instansi', 'organisasi', 'organization', 'perusahaan', 'institusi'] },
+  { key: 'division', label: 'Division', guess: ['division', 'divisi', 'department', 'departemen', 'dept', 'bagian'] },
+  { key: 'job_title', label: 'Job Title', guess: ['job title', 'jabatan', 'title', 'position', 'posisi'] },
   { key: 'email', label: 'Email', guess: ['email', 'e-mail', 'surel'] },
   { key: 'phone', label: 'Telepon', guess: ['telepon', 'no hp', 'hp', 'phone', 'whatsapp', 'wa'] },
   { key: 'category', label: 'Kategori', guess: ['kategori', 'category', 'jenis', 'tipe', 'type'] },
 ]
-// Instansi ditebak lebih dulu supaya kolom "Nama Instansi" tidak terbaca sebagai nama peserta
-const GUESS_ORDER = ['qr_code', 'organization', 'full_name', 'email', 'phone', 'category']
+// Company, division, dan jabatan ditebak lebih dulu supaya kolom seperti "Nama Perusahaan" tidak terbaca sebagai nama peserta
+const GUESS_ORDER = ['qr_code', 'organization', 'division', 'job_title', 'full_name', 'email', 'phone', 'category']
 const BATCH = 500
 
 function guessMapping(headers) {

@@ -53,7 +53,7 @@ export default function Dashboard() {
     for (let from = 0; ; from += pageSize) {
       const { data, error } = await supabase
         .from('checkins')
-        .select('checked_in_at, participant:participants(qr_code,full_name,organization,category), checkpoint:checkpoints(name), officer:profiles(full_name)')
+        .select('checked_in_at, participant:participants(*), checkpoint:checkpoints(name), officer:profiles(full_name)')
         .order('checked_in_at')
         .range(from, from + pageSize - 1)
       if (error) {
@@ -69,7 +69,9 @@ export default function Dashboard() {
         Waktu: new Date(r.checked_in_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
         Checkpoint: r.checkpoint?.name,
         Nama: r.participant?.full_name,
-        Instansi: r.participant?.organization,
+        Company: r.participant?.organization,
+        Division: r.participant?.division,
+        'Job Title': r.participant?.job_title,
         Kategori: r.participant?.category,
         'Kode QR': r.participant?.qr_code,
         Petugas: r.officer?.full_name,

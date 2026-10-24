@@ -43,6 +43,8 @@ Butuh Node.js 18 atau lebih baru.
 
 1. **Buat project Supabase** (region Singapore paling dekat ke Indonesia).
 2. Buka **SQL Editor**, jalankan isi `supabase/schema.sql`, lalu `supabase/seed.sql`.
+   Database yang dibuat sebelum ada kolom Division dan Job Title: jalankan juga
+   `supabase/migrations/20261024000000_participant_division_job_title.sql`.
 3. Buat akun admin: **Authentication > Users > Add user** (centang *Auto Confirm User*). Lalu di SQL Editor:
    ```sql
    update public.profiles set role = 'admin' where email = 'email-admin@contoh.com';
@@ -89,8 +91,8 @@ Seed berisi peserta uji dengan kode `e883d05a5a` (sama dengan contoh QR panitia)
 
 ## Impor peserta
 
-Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Kode QR, Nama, Instansi, Email,
-Telepon, Kategori) dan bisa diubah manual. Impor memakai upsert berdasarkan kode QR, jadi file susulan
+Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Kode QR, Nama, Company, Division,
+Job Title, Email, Telepon, Kategori) dan bisa diubah manual. Impor memakai upsert berdasarkan kode QR, jadi file susulan
 dari panitia bisa diimpor ulang tanpa duplikat. Kode QR disimpan dalam huruf kecil.
 
 Kolom kode QR harus berupa **teks** (contoh `e883d05a5a`), bukan gambar QR.
