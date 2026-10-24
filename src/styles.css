@@ -525,10 +525,6 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .created-actions .btn-ghost { grid-column: 1 / -1; justify-self: center; }
 .detail-qr { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin: 0 0 1rem; }
 .add-form .hint { margin: -0.5rem 0 0; }
-.qr-upload { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem; }
-.qr-upload > label:first-child { flex: 1 1 220px; }
-.qr-upload .btn.disabled { opacity: 0.45; cursor: progress; }
-.qr-upload .btn-ghost { min-height: 44px; }
 
 /* Dashboard: satu baris per checkpoint (ikon, nama + tipe, total scan, hari ini) */
 .cards.cp-list { gap: 0.5rem; }

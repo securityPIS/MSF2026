@@ -73,7 +73,7 @@ export default function Dashboard() {
         Division: r.participant?.division,
         'Job Title': r.participant?.job_title,
         Kategori: r.participant?.category,
-        'Kode QR': r.participant?.qr_code,
+        'Unique ID': r.participant?.qr_code,
         Petugas: r.officer?.full_name,
       }))
     )

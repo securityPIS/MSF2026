@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx'
 import { supabase } from '../../lib/supabase.js'
 
 const FIELDS = [
-  { key: 'qr_code', label: 'Kode QR', required: true, guess: ['kode qr', 'qr code', 'qr', 'barcode', 'kode', 'code', 'token'] },
+  { key: 'qr_code', label: 'Unique ID', required: true, guess: ['unique id', 'uniqueid', 'uid', 'kode qr', 'qr code', 'qr', 'barcode', 'kode', 'code', 'token'] },
   { key: 'full_name', label: 'Nama', required: true, guess: ['nama', 'nama lengkap', 'name', 'full name'] },
   { key: 'organization', label: 'Company', guess: ['company', 'instansi', 'organisasi', 'organization', 'perusahaan', 'institusi'] },
   { key: 'division', label: 'Division', guess: ['division', 'divisi', 'department', 'departemen', 'dept', 'bagian'] },
@@ -43,7 +43,7 @@ function analyze(rows, map) {
     const line = i + 2 // baris 1 = header
     const code = cell(r, 'qr_code').toLowerCase()
     const name = cell(r, 'full_name')
-    if (!code) return issues.push(`Baris ${line}: kode QR kosong`)
+    if (!code) return issues.push(`Baris ${line}: Unique ID kosong`)
     if (!name) return issues.push(`Baris ${line}: nama kosong`)
     if (seen.has(code)) return issues.push(`Baris ${line}: kode ${code} sama dengan baris ${seen.get(code)}, dilewati`)
     seen.set(code, line)
@@ -109,7 +109,7 @@ export default function Import() {
     setBusy(false)
     setStatus({
       type: 'ok',
-      text: `${valid.length} peserta tersimpan. Peserta dengan kode QR yang sudah ada diperbarui, bukan diduplikasi.`,
+      text: `${valid.length} peserta tersimpan. Peserta dengan Unique ID yang sudah ada diperbarui, bukan diduplikasi.`,
     })
   }
 
@@ -173,7 +173,7 @@ export default function Import() {
             )}
             {valid.length === 0 && issues.length > 0 && (
               <p className="hint">
-                Kalau semua kode QR kosong, kemungkinan kolom QR di Excel berisi gambar, bukan teks. Kode perlu diubah dulu menjadi teks.
+                Kalau semua Unique ID kosong, kemungkinan kolom di Excel berisi gambar QR, bukan teks. Unique ID perlu diubah dulu menjadi teks.
               </p>
             )}
             {valid.length > 0 && (

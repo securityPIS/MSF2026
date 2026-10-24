@@ -8,7 +8,7 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 ## Peran
 
 - **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas, batalkan check-in.
-- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (kode QR dibuat otomatis dan bisa diunduh sebagai kartu PNG; kalau peserta sudah punya QR, upload gambarnya atau ketik kodenya supaya kode lama yang dipakai).
+- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
 - **Peserta**: tanpa login. Riwayat check-in bisa dibuka di `/p/<kode-qr>`.
 
 ## Role akses
@@ -91,11 +91,11 @@ Seed berisi peserta uji dengan kode `e883d05a5a` (sama dengan contoh QR panitia)
 
 ## Impor peserta
 
-Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Kode QR, Nama, Company, Division,
-Job Title, Email, Telepon, Kategori) dan bisa diubah manual. Impor memakai upsert berdasarkan kode QR, jadi file susulan
-dari panitia bisa diimpor ulang tanpa duplikat. Kode QR disimpan dalam huruf kecil.
+Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Unique ID, Nama, Company, Division,
+Job Title, Email, Telepon, Kategori) dan bisa diubah manual. Impor memakai upsert berdasarkan Unique ID, jadi file susulan
+dari panitia bisa diimpor ulang tanpa duplikat. Unique ID disimpan dalam huruf kecil.
 
-Kolom kode QR harus berupa **teks** (contoh `e883d05a5a`), bukan gambar QR.
+Kolom Unique ID harus berupa **teks** (contoh `e883d05a5a`), bukan gambar QR.
 
 ## Struktur
 

@@ -242,8 +242,8 @@ function ManualEntry({ onSubmit, disabled }) {
           }}
         >
           <input
-            aria-label="Kode QR"
-            placeholder="Ketik kode QR"
+            aria-label="Unique ID"
+            placeholder="Ketik Unique ID"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             autoCapitalize="none"
