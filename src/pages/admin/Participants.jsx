@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { supabase } from '../../lib/supabase.js'
 import { cleanTerm, formatTime } from '../../lib/format.js'
 import KindIcon from '../../components/KindIcon.jsx'
@@ -12,6 +13,7 @@ import { canAddParticipants } from '../../lib/permissions.js'
 const PAGE = 20
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const CATEGORIES = ['Umum', 'VIP', 'Pembicara', 'Media', 'Panitia']
+const QR_UPLOAD_ID = 'qr-upload-reader'
 
 export default function Participants() {
   const { profile } = useAuth()
@@ -168,11 +170,46 @@ export default function Participants() {
   )
 }
 
+// Kode disimpan dengan aturan yang sama seperti saat scan dan impor Excel
+const normalizeCode = (s) => String(s || '').trim().toLowerCase()
+
+async function findByCode(code) {
+  const { data } = await supabase.from('participants').select('full_name').eq('qr_code', code).maybeSingle()
+  return data
+}
+
 function AddParticipant({ onCancel, onCreated }) {
-  const [f, setF] = useState({ full_name: '', organization: '', category: 'Umum', email: '', phone: '' })
+  const [f, setF] = useState({ full_name: '', organization: '', category: 'Umum', email: '', phone: '', qr_code: '' })
   const [busy, setBusy] = useState(false)
+  const [reading, setReading] = useState(false)
+  const [qrNote, setQrNote] = useState(null)
   const [error, setError] = useState('')
   const set = (k, v) => setF((p) => ({ ...p, [k]: v }))
+  const ownCode = normalizeCode(f.qr_code)
+
+  async function readQrImage(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // supaya file yang sama bisa dipilih lagi
+    if (!file) return
+    setReading(true)
+    setQrNote(null)
+    setError('')
+    const reader = new Html5Qrcode(QR_UPLOAD_ID, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false })
+    try {
+      const code = normalizeCode(await reader.scanFile(file, false))
+      if (!code) throw new Error('kosong')
+      set('qr_code', code)
+      const owner = await findByCode(code)
+      setQrNote(owner
+        ? { tone: 'error', text: `Kode ${code} sudah terdaftar atas nama ${owner.full_name}.` }
+        : { tone: 'ok', text: `QR terbaca: ${code}. Kode ini yang akan dipakai, tidak dibuat QR baru.` })
+    } catch {
+      setQrNote({ tone: 'error', text: 'QR tidak terbaca dari gambar. Coba gambar yang lebih jelas, atau ketik kodenya.' })
+    } finally {
+      reader.clear()
+      setReading(false)
+    }
+  }
 
   async function save(e) {
     e.preventDefault()
@@ -180,25 +217,57 @@ function AddParticipant({ onCancel, onCreated }) {
     setError('')
     const payload = { full_name: f.full_name.trim() }
     for (const k of ['organization', 'category', 'email', 'phone']) payload[k] = f[k].trim() || null
+    if (ownCode) payload.qr_code = ownCode
 
-    // Kode QR dibuat otomatis oleh database. Kalau kebetulan bentrok dengan kode lain, coba lagi.
+    // Tanpa kode sendiri, kode QR dibuat otomatis oleh database. Kalau kebetulan bentrok dengan kode lain, coba lagi.
     let result
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < (ownCode ? 1 : 3); attempt++) {
       result = await supabase.from('participants').insert(payload).select('id,qr_code,full_name,organization,category').single()
       if (result.error?.code !== '23505') break
+    }
+    if (result.error?.code === '23505' && ownCode) {
+      const owner = await findByCode(ownCode)
+      setBusy(false)
+      setError(`Kode QR ${ownCode} sudah dipakai${owner ? ` oleh ${owner.full_name}` : ' peserta lain'}. Periksa lagi gambar atau kodenya.`)
+      return
     }
     setBusy(false)
     if (result.error) {
       setError(`Peserta gagal disimpan: ${result.error.message}`)
       return
     }
-    onCreated(result.data)
+    onCreated({ ...result.data, existingQr: !!ownCode })
   }
 
   return (
     <form className="panel form-grid add-form" onSubmit={save}>
       <h2>Tambah peserta</h2>
-      <p className="hint full">Kode QR dibuat otomatis setelah disimpan.</p>
+      <p className="hint full">Sudah punya QR code? Upload gambarnya atau ketik kodenya. Kalau dikosongkan, kode QR dibuat otomatis setelah disimpan.</p>
+      <div className="full qr-upload">
+        <label>
+          Kode QR yang sudah ada (opsional)
+          <input
+            value={f.qr_code}
+            onChange={(e) => {
+              set('qr_code', e.target.value)
+              setQrNote(null)
+              setError('')
+            }}
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="Kosongkan untuk buat QR baru"
+          />
+        </label>
+        <label className={`btn ${reading ? 'disabled' : ''}`}>
+          {reading ? 'Membaca…' : 'Upload gambar QR'}
+          <input type="file" accept="image/*" hidden disabled={reading} onChange={readQrImage} />
+        </label>
+        {f.qr_code && (
+          <button type="button" className="btn-ghost" onClick={() => { set('qr_code', ''); setQrNote(null) }}>Hapus</button>
+        )}
+        <div id={QR_UPLOAD_ID} hidden />
+      </div>
+      {qrNote && <p className={`full ${qrNote.tone === 'error' ? 'form-error' : 'hint'}`} role="status">{qrNote.text}</p>}
       <label className="full">
         Nama lengkap (wajib)
         <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder="Contoh: Budi Santoso" />
@@ -225,7 +294,9 @@ function AddParticipant({ onCancel, onCreated }) {
       {error && <p className="form-error full" role="alert">{error}</p>}
       <div className="form-actions">
         <button type="button" className="btn" onClick={onCancel}>Batal</button>
-        <button className="btn btn-primary" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan & buat QR'}</button>
+        <button className="btn btn-primary" disabled={busy || reading}>
+          {busy ? 'Menyimpan…' : ownCode ? 'Simpan dengan QR ini' : 'Simpan & buat QR'}
+        </button>
       </div>
     </form>
   )
@@ -234,7 +305,7 @@ function AddParticipant({ onCancel, onCreated }) {
 function CreatedCard({ p, onAgain, onOpen, onClose }) {
   return (
     <section className="panel created" style={{ marginTop: 0, marginBottom: '1.25rem' }} role="status">
-      <p className="created-badge">✓ Peserta tersimpan, QR code siap</p>
+      <p className="created-badge">✓ Peserta tersimpan, {p.existingQr ? 'memakai QR code yang sudah ada' : 'QR code siap'}</p>
       <QrCode code={p.qr_code} size={220} />
       <div className="created-info">
         <h2>{p.full_name}</h2>
