@@ -70,7 +70,7 @@ export default function Dashboard() {
         Checkpoint: r.checkpoint?.name,
         Nama: r.participant?.full_name,
         Company: r.participant?.organization,
-        Division: r.participant?.division,
+        Department: r.participant?.division,
         'Job Title': r.participant?.job_title,
         Kategori: r.participant?.category,
         'Unique ID': r.participant?.qr_code,

@@ -43,7 +43,7 @@ Butuh Node.js 18 atau lebih baru.
 
 1. **Buat project Supabase** (region Singapore paling dekat ke Indonesia).
 2. Buka **SQL Editor**, jalankan isi `supabase/schema.sql`, lalu `supabase/seed.sql`.
-   Database yang dibuat sebelum ada kolom Division dan Job Title: jalankan juga
+   Database yang dibuat sebelum ada kolom Department (division) dan Job Title: jalankan juga
    `supabase/migrations/20261024000000_participant_division_job_title.sql`.
 3. Buat akun admin: **Authentication > Users > Add user** (centang *Auto Confirm User*). Lalu di SQL Editor:
    ```sql
@@ -91,7 +91,7 @@ Seed berisi peserta uji dengan kode `e883d05a5a` (sama dengan contoh QR panitia)
 
 ## Impor peserta
 
-Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Unique ID, Nama, Company, Division,
+Menu **Peserta > Impor dari Excel**. Kolom ditebak otomatis dari judul (Unique ID, Nama, Company, Department,
 Job Title, Email, Telepon, Kategori) dan bisa diubah manual. Impor memakai upsert berdasarkan Unique ID, jadi file susulan
 dari panitia bisa diimpor ulang tanpa duplikat. Unique ID disimpan dalam huruf kecil.
 

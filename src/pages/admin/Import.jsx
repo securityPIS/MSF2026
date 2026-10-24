@@ -7,7 +7,7 @@ const FIELDS = [
   { key: 'qr_code', label: 'Unique ID', required: true, guess: ['unique id', 'uniqueid', 'uid', 'kode qr', 'qr code', 'qr', 'barcode', 'kode', 'code', 'token'] },
   { key: 'full_name', label: 'Nama', required: true, guess: ['nama', 'nama lengkap', 'name', 'full name'] },
   { key: 'organization', label: 'Company', guess: ['company', 'instansi', 'organisasi', 'organization', 'perusahaan', 'institusi'] },
-  { key: 'division', label: 'Division', guess: ['division', 'divisi', 'department', 'departemen', 'dept', 'bagian'] },
+  { key: 'division', label: 'Department', guess: ['department', 'departement', 'departemen', 'division', 'divisi', 'dept', 'bagian'] },
   { key: 'job_title', label: 'Job Title', guess: ['job title', 'jabatan', 'title', 'position', 'posisi'] },
   { key: 'email', label: 'Email', guess: ['email', 'e-mail', 'surel'] },
   { key: 'phone', label: 'Telepon', guess: ['telepon', 'no hp', 'hp', 'phone', 'whatsapp', 'wa'] },

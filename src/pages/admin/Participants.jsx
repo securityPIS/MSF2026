@@ -242,7 +242,7 @@ function AddParticipant({ onCancel, onCreated }) {
         <input value={f.organization} onChange={(e) => set('organization', e.target.value)} placeholder="Contoh: Bakamla RI" />
       </label>
       <label>
-        Division
+        Department
         <input value={f.division} onChange={(e) => set('division', e.target.value)} placeholder="Contoh: Operasi Laut" />
       </label>
       <label>
@@ -343,7 +343,7 @@ function ParticipantDetail({ id, canCancel, onBack }) {
       <h2>{p.full_name}</h2>
       <dl>
         <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
-        <div><dt>Division</dt><dd>{p.division || '-'}</dd></div>
+        <div><dt>Department</dt><dd>{p.division || '-'}</dd></div>
         <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
         <div><dt>Kategori</dt><dd>{p.category || '-'}</dd></div>
         <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
