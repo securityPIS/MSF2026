@@ -40,6 +40,72 @@ const ICON = {
   shield: 'M12 3 20 6v6c0 5-3.4 8.3-8 9.5C7.4 20.3 4 17 4 12V6l8-3ZM9 12l2 2 4-4',
   network: 'M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM19 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 8v4l-5.3 4.4M12 12l5.3 4.4',
   link: 'M9 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM15 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z',
+  // Ikon bagian Siapa yang sebaiknya hadir
+  ship: 'M3.5 15h17l-2 4h-13l-2-4ZM6.5 15v-5h11v5M10 10V6h4v4M2 21.5c1.7 0 2.3-1 4-1s2.3 1 4 1 2.3-1 4-1 2.3 1 4 1 2.3-1 4-1',
+  shieldPlain: 'M12 3 20 6v6c0 5-3.4 8.3-8 9.5C7.4 20.3 4 17 4 12V6l8-3Z',
+  crane: 'M6 21V3M10 21V3M6 7l4-4M6 11l4-4M6 15l4-4M3 3h18M18 3v5M16 8h4v3h-4ZM14 21v-5h8v5M2 21h20',
+  bolt: 'M13 2 4 14h7l-1 8 9-12h-7l1-8Z',
+  anchor: 'M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 8v13M8.5 11h7M4 13a8 8 0 0 0 16 0M2.5 14.5 4 13l1.5 1.5M18.5 14.5 20 13l1.5 1.5',
+  target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM12 12l7-7M16 5h3v3',
+  lock: 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1ZM8 11V8a4 4 0 0 1 8 0v3M12 15v2',
+  lifebuoy: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6',
+  chip: 'M8 6h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM10 10h4v4h-4ZM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4',
+  bookOpen: 'M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2V5ZM22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7V5Z',
+  users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6',
+}
+
+// Ornamen latar bertema keamanan maritim: radar, gelombang, jalur pelayaran, mata angin
+function Deco({ kind, className = '' }) {
+  const common = { className: `lp-deco lp-deco-${kind} ${className}`, 'aria-hidden': true, focusable: 'false', fill: 'none', stroke: 'currentColor' }
+  if (kind === 'radar') {
+    return (
+      <svg {...common} viewBox="0 0 400 400" strokeWidth="1.2">
+        {[50, 95, 140, 185].map((r) => <circle key={r} cx="200" cy="200" r={r} />)}
+        <path d="M200 10v380M10 200h380M66 66l268 268M334 66 66 334" strokeDasharray="3 7" />
+        <path d="M200 200 200 15A185 185 0 0 1 353 96Z" fill="currentColor" fillOpacity="0.18" stroke="none" />
+        <circle cx="262" cy="118" r="4" fill="currentColor" />
+        <circle cx="140" cy="250" r="3" fill="currentColor" />
+        <circle cx="300" cy="230" r="3" fill="currentColor" />
+      </svg>
+    )
+  }
+  if (kind === 'waves') {
+    return (
+      <svg {...common} viewBox="0 0 1200 220" preserveAspectRatio="none" strokeWidth="1.4">
+        {[0, 28, 56, 84, 112].map((y, i) => (
+          <path key={y} d={`M0 ${100 + y}C150 ${60 + y} 300 ${150 + y} 450 ${100 + y}S750 ${50 + y} 900 ${100 + y}S1150 ${150 + y} 1200 ${90 + y}`} opacity={1 - i * 0.16} />
+        ))}
+      </svg>
+    )
+  }
+  if (kind === 'route') {
+    return (
+      <svg {...common} viewBox="0 0 600 320" strokeWidth="1.4">
+        <defs>
+          <pattern id={`lp-dots-${className}`} width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.3" fill="currentColor" stroke="none" />
+          </pattern>
+        </defs>
+        <rect width="600" height="320" fill={`url(#lp-dots-${className})`} stroke="none" opacity="0.6" />
+        <path d="M30 280C140 240 170 120 300 140S470 70 570 40" strokeDasharray="7 8" strokeWidth="2" />
+        {[[30, 280], [300, 140], [570, 40]].map(([x, y]) => (
+          <g key={x}>
+            <circle cx={x} cy={y} r="7" fill="currentColor" fillOpacity="0.25" />
+            <circle cx={x} cy={y} r="16" />
+          </g>
+        ))}
+      </svg>
+    )
+  }
+  return (
+    <svg {...common} viewBox="0 0 200 200" strokeWidth="1.2">
+      <circle cx="100" cy="100" r="92" />
+      <circle cx="100" cy="100" r="74" strokeDasharray="2 6" />
+      <path d="M100 6 112 100 100 194 88 100ZM6 100l94-12 94 12-94 12Z" />
+      <path d="M100 6v188M6 100h188" opacity="0.5" />
+      <path d="m100 40 6 54 54 6-54 6-6 54-6-54-54-6 54-6Z" fill="currentColor" fillOpacity="0.15" />
+    </svg>
+  )
 }
 
 function Icon({ name, size = 20 }) {
@@ -292,7 +358,9 @@ function SectionHead({ eyebrow, title, intro }) {
 
 function Gains() {
   return (
-    <section className="lp-section lp-section-alt">
+    <section className="lp-section lp-light">
+      <Deco kind="waves" className="lp-deco-bottom" />
+      <Deco kind="compass" className="lp-deco-tr" />
       <div className="lp-wrap">
         <SectionHead eyebrow={tr('Manfaat', 'Benefits')} title={tr('Yang akan Anda dapatkan', 'What you will gain')} />
         <ol className="lp-gains">
@@ -319,7 +387,8 @@ function Programme({ onSpeaker }) {
   const current = PROGRAMME.find((d) => d.key === day)
 
   return (
-    <section className="lp-section" id="programme">
+    <section className="lp-section lp-dark-section" id="programme">
+      <Deco kind="radar" className="lp-deco-tr lp-deco-lg" />
       <div className="lp-wrap">
         <SectionHead
           eyebrow={tr('Agenda acara', 'Event programme')}
@@ -380,7 +449,8 @@ function Programme({ onSpeaker }) {
 
 function Speakers({ onSpeaker }) {
   return (
-    <section className="lp-section lp-section-alt" id="speakers">
+    <section className="lp-section lp-light" id="speakers">
+      <Deco kind="route" className="lp-deco-tr" />
       <div className="lp-wrap">
         <SectionHead
           eyebrow={tr('Pembicara', 'Speakers')}
@@ -469,34 +539,42 @@ function SpeakerDialog({ speakerKey, onClose }) {
 
 function Attend() {
   return (
-    <section className="lp-section">
-      <div className="lp-wrap lp-attend">
-        <div className="lp-attend-intro">
-          <SectionHead
-            eyebrow={tr('Peserta', 'Audience')}
-            title={tr('Siapa yang sebaiknya hadir', 'Who should attend')}
-            intro={tr(
-              'Keamanan maritim kini lintas fungsi. Forum ini relevan untuk siapa pun yang melindungi, mengelola, mengatur, atau mendukung operasi maritim.',
-              'Maritime security is now cross-functional. The forum is relevant to anyone who protects, manages, regulates, or enables maritime operations.'
+    <section className="lp-section lp-light lp-attend-section">
+      <div className="lp-attend-banner lp-dark">
+        <img src="/landing/banner.webp" alt="" loading="lazy" width="1400" height="630" />
+        <Deco kind="waves" className="lp-deco-banner" />
+        <div className="lp-wrap">
+          <p className="lp-eyebrow lp-eyebrow-line">{tr('Komunitas kami', 'Our community')}</p>
+          <h2>
+            {tr('Siapa yang sebaiknya', 'Who should')} <span>{tr('hadir', 'attend')}</span>
+          </h2>
+          <p>
+            {tr(
+              'Terhubung dengan para profesional yang membangun operasi maritim yang lebih aman dan tangguh.',
+              'Connect with the people shaping safer, more resilient maritime operations.'
             )}
-          />
-          <img
-            className="lp-attend-img"
-            src="/landing/banner.webp"
-            alt={tr('Tim keamanan maritim di pelabuhan energi saat malam', 'Maritime security team at an energy port at night')}
-            loading="lazy"
-            width="1400"
-            height="630"
-          />
+          </p>
         </div>
-        <ul className="lp-attend-list">
+      </div>
+      <div className="lp-wrap">
+        <ul className="lp-attend-grid">
           {ATTEND.map((a, i) => (
             <li key={i}>
-              <Icon name="check" size={18} />
-              {L(a)}
+              <span className="lp-attend-icon"><Icon name={a.icon} size={28} /></span>
+              <div>
+                <h3>{L(a.title)}</h3>
+                <p>{L(a.desc)}</p>
+              </div>
             </li>
           ))}
         </ul>
+        <div className="lp-attend-cta">
+          <span className="lp-attend-cta-icon"><Icon name="users" size={34} /></span>
+          <p>{tr('Keahlian Anda dibutuhkan dalam percakapan ini.', 'Your expertise belongs in the conversation.')}</p>
+          <a className="lp-btn lp-btn-primary lp-btn-lg" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
+            {tr('Daftar sekarang', 'Register now')}
+          </a>
+        </div>
       </div>
     </section>
   )
@@ -504,7 +582,8 @@ function Attend() {
 
 function Partners() {
   return (
-    <section className="lp-section lp-section-alt" id="partners">
+    <section className="lp-section lp-dark-section" id="partners">
+      <Deco kind="waves" className="lp-deco-bottom" />
       <div className="lp-wrap">
         <SectionHead eyebrow="MSF 2026" title={tr('Partner kami', 'Our partners')} intro={L(PARTNERS_TEXT)} />
         <ul className="lp-partners">
@@ -522,9 +601,11 @@ function Partners() {
 function Venue() {
   const routeIcons = ['plane', 'train', 'car']
   return (
-    <section className="lp-section" id="venue">
+    <section className="lp-section lp-light" id="venue">
+      <Deco kind="route" className="lp-deco-bl" />
       <div className="lp-wrap lp-venue">
-        <div className="lp-venue-card">
+        <div className="lp-venue-card lp-dark">
+          <Deco kind="compass" className="lp-deco-card" />
           <SectionHead eyebrow={tr('Lokasi', 'Venue')} title={EVENT.venue} />
           <p className="lp-venue-room">{SESSION_ROOM}</p>
           <address>{EVENT.address}</address>
@@ -567,7 +648,8 @@ function Faq() {
   const [all, setAll] = useState(false)
   const shown = all ? FAQ : FAQ.slice(0, 6)
   return (
-    <section className="lp-section lp-section-alt" id="faq">
+    <section className="lp-section lp-dark-section" id="faq">
+      <Deco kind="radar" className="lp-deco-bl lp-deco-lg" />
       <div className="lp-wrap lp-faq-wrap">
         <SectionHead eyebrow="FAQ" title={tr('Pertanyaan yang sering diajukan', 'Frequently asked questions')} />
         <div className="lp-faq">
@@ -597,9 +679,10 @@ function Faq() {
 
 function Community() {
   return (
-    <section className="lp-section">
+    <section className="lp-section lp-light">
       <div className="lp-wrap">
-        <div className="lp-community">
+        <div className="lp-community lp-dark">
+          <Deco kind="compass" className="lp-deco-card" />
           <div>
             <h2>{L(COMMUNITY.title)}</h2>
             <p>{L(COMMUNITY.body)}</p>

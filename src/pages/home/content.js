@@ -53,16 +53,56 @@ export const GAINS = [
 ]
 
 export const ATTEND = [
-  { id: 'Eksekutif maritim & pelayaran', en: 'Maritime and shipping executives' },
-  { id: 'Pemimpin HSSE & keamanan', en: 'HSSE and security leaders' },
-  { id: 'Operator pelabuhan & terminal', en: 'Port and terminal operators' },
-  { id: 'Profesional sektor energi', en: 'Energy-sector professionals' },
-  { id: 'Perwakilan TNI AL & penegak hukum maritim', en: 'Naval and maritime law-enforcement representatives' },
-  { id: 'Praktisi intelijen & risiko', en: 'Intelligence and risk practitioners' },
-  { id: 'Spesialis keamanan siber', en: 'Cybersecurity specialists' },
-  { id: 'Profesional manajemen darurat & krisis', en: 'Emergency and crisis management professionals' },
-  { id: 'Penyedia teknologi maritim', en: 'Maritime technology providers' },
-  { id: 'Akademisi & peneliti', en: 'Academics and researchers' },
+  {
+    icon: 'ship',
+    title: { id: 'Eksekutif maritim & pelayaran', en: 'Maritime & shipping executives' },
+    desc: { id: 'Memimpin strategi dan operasi armada.', en: 'Lead strategy and fleet operations.' },
+  },
+  {
+    icon: 'shieldPlain',
+    title: { id: 'Pemimpin HSSE & keamanan', en: 'HSSE & security leaders' },
+    desc: { id: 'Memperkuat perlindungan dan ketahanan.', en: 'Strengthen protection and resilience.' },
+  },
+  {
+    icon: 'crane',
+    title: { id: 'Operator pelabuhan & terminal', en: 'Port & terminal operators' },
+    desc: { id: 'Mengamankan gerbang maritim yang vital.', en: 'Secure critical maritime gateways.' },
+  },
+  {
+    icon: 'bolt',
+    title: { id: 'Profesional sektor energi', en: 'Energy-sector professionals' },
+    desc: { id: 'Menjaga rantai pasok energi.', en: 'Safeguard the energy supply chain.' },
+  },
+  {
+    icon: 'anchor',
+    title: { id: 'TNI AL & penegak hukum maritim', en: 'Naval & maritime law enforcement' },
+    desc: { id: 'Memajukan keselamatan dan keamanan maritim.', en: 'Advance maritime safety and security.' },
+  },
+  {
+    icon: 'target',
+    title: { id: 'Praktisi intelijen & risiko', en: 'Intelligence & risk practitioners' },
+    desc: { id: 'Mengubah wawasan menjadi tindakan yang tepat.', en: 'Turn insight into informed action.' },
+  },
+  {
+    icon: 'lock',
+    title: { id: 'Spesialis keamanan siber', en: 'Cybersecurity specialists' },
+    desc: { id: 'Melindungi aset maritim yang terhubung.', en: 'Protect connected maritime assets.' },
+  },
+  {
+    icon: 'lifebuoy',
+    title: { id: 'Profesional darurat & krisis', en: 'Emergency & crisis professionals' },
+    desc: { id: 'Bersiap, merespons, dan pulih.', en: 'Prepare, respond and recover.' },
+  },
+  {
+    icon: 'chip',
+    title: { id: 'Penyedia teknologi maritim', en: 'Maritime technology providers' },
+    desc: { id: 'Menghadirkan solusi keamanan yang lebih cerdas.', en: 'Enable smarter security solutions.' },
+  },
+  {
+    icon: 'bookOpen',
+    title: { id: 'Akademisi & peneliti', en: 'Academics & researchers' },
+    desc: { id: 'Menghubungkan bukti dengan praktik.', en: 'Connect evidence with practice.' },
+  },
 ]
 
 const P = '/landing/speakers/'
