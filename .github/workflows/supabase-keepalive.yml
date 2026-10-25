@@ -1,0 +1,39 @@
+# Project Supabase paket gratis berhenti sendiri kalau tidak dipakai sekitar seminggu.
+# Workflow ini menjalankan satu query ringan setiap hari supaya project tetap aktif.
+# Butuh dua secret di GitHub (Settings > Secrets and variables > Actions):
+#   SUPABASE_URL       sama dengan VITE_SUPABASE_URL
+#   SUPABASE_ANON_KEY  sama dengan VITE_SUPABASE_ANON_KEY
+name: Jaga Supabase tetap aktif
+
+on:
+  schedule:
+    - cron: '17 1 * * *' # setiap hari 08:17 WIB
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query ringan ke database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Secret SUPABASE_URL dan SUPABASE_ANON_KEY belum diisi (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          # participant_history boleh dipanggil tanpa login; kode yang tidak ada hanya mengembalikan null
+          status=$(curl -sS --max-time 30 -o response.txt -w '%{http_code}' \
+            -X POST "${SUPABASE_URL%/}/rest/v1/rpc/participant_history" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"p_code":"keepalive"}')
+          echo "HTTP $status: $(cat response.txt)"
+          if [ "$status" != "200" ]; then
+            echo "::error::Ping gagal (HTTP $status). Kalau project sedang di-pause, aktifkan lagi dari dashboard Supabase."
+            exit 1
+          fi

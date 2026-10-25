@@ -378,6 +378,10 @@ dd { margin: 0; overflow-wrap: anywhere; }
 #qr-reader__scan_region img, #qr-shaded-region { display: none !important; }
 .cam-error, .busy { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 1.5rem; text-align: center; background: rgba(3, 16, 58, 0.9); color: var(--muted); font-size: 0.9rem; }
 .busy { color: #fff; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.04em; }
+.conn { display: flex; align-items: center; justify-content: center; gap: 0.45rem; margin: 0; font-size: 0.82rem; font-weight: 600; text-align: center; }
+.conn::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.conn.on { color: #8ff0bf; }
+.conn.off { padding: 0.7rem 0.9rem; border: 1px solid rgba(229, 72, 77, 0.7); border-radius: var(--r); background: rgba(229, 72, 77, 0.18); color: #ffb3b5; font-size: 0.9rem; font-weight: 700; }
 .scan-count { margin: 0; color: var(--muted); font-size: 0.82rem; text-align: center; }
 
 /* Layar hasil scan: satu warna penuh, terbaca dari jarak satu lengan */

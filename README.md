@@ -8,7 +8,7 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 ## Peran
 
 - **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas, batalkan check-in, reset semua check-in per checkpoint dari Dashboard.
-- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya, lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
+- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya (ada tanda koneksi; saat internet putus, scan ditolak dengan jelas, bukan diam-diam hilang), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
 - **Peserta**: tanpa login. Riwayat check-in bisa dibuka di `/p/<kode-qr>`.
 
 ## Role akses
@@ -64,6 +64,13 @@ Butuh Node.js 18 atau lebih baru.
    npm run dev
    ```
    Buka `https://localhost:5173` dan terima peringatan sertifikat (sertifikat lokal untuk development).
+
+## Jaga project Supabase tetap aktif
+
+Project Supabase paket gratis berhenti sendiri kalau tidak dipakai sekitar seminggu. Workflow
+`.github/workflows/supabase-keepalive.yml` menjalankan satu query ringan setiap hari pukul 08:17 WIB.
+Isi dua secret di GitHub, **Settings > Secrets and variables > Actions**: `SUPABASE_URL` dan `SUPABASE_ANON_KEY`
+(nilainya sama dengan `.env`). Coba sekali lewat tab **Actions > Jaga Supabase tetap aktif > Run workflow**.
 
 ## Mode demo (tanpa Supabase)
 

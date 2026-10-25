@@ -6,10 +6,12 @@ import { formatTime } from '../lib/format.js'
 import KindIcon from '../components/KindIcon.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { canCheckpoint } from '../lib/permissions.js'
+import { isNetworkError, useConnection, withTimeout } from '../lib/connection.js'
 
 const STORAGE_KEY = 'msf2026.checkpoint'
 const READER_ID = 'qr-reader'
 const SAME_CODE_COOLDOWN = 5000 // ms: QR yang sama diabaikan selama kamera masih mengarah padanya
+const RETRYABLE = ['offline', 'timeout', 'error'] // gagal karena koneksi: QR yang sama boleh langsung di-scan ulang
 
 export default function Scan() {
   const { profile } = useAuth()
@@ -19,6 +21,7 @@ export default function Scan() {
   const [busy, setBusy] = useState(false)
   const [camError, setCamError] = useState('')
   const [okCount, setOkCount] = useState(0)
+  const [online, setOnline] = useConnection()
 
   const cpRef = useRef(cpId)
   const lockRef = useRef(false)
@@ -61,19 +64,24 @@ export default function Scan() {
 
       lastRef.current = { code, t: now }
       lockRef.current = true
-      setBusy(true)
-      const { data, error } = await supabase.rpc('perform_checkin', {
-        p_code: code,
-        p_checkpoint_id: cpRef.current,
-      })
-      setBusy(false)
-
-      const res = error ? { status: 'error', message: error.message } : data
+      let res
+      if (!navigator.onLine) res = { status: 'offline' }
+      else {
+        setBusy(true)
+        const { data, error, timedOut } = await withTimeout(
+          supabase.rpc('perform_checkin', { p_code: code, p_checkpoint_id: cpRef.current })
+        )
+        setBusy(false)
+        if (error && isNetworkError(error)) res = { status: timedOut ? 'timeout' : 'offline' }
+        else res = error ? { status: 'error', message: error.message } : data
+      }
+      setOnline(res.status !== 'offline' && res.status !== 'timeout')
+      if (RETRYABLE.includes(res.status)) lastRef.current = { code: '', t: 0 }
       setResult(res)
       feedback(res.status)
       if (res.status === 'ok') setOkCount((n) => n + 1)
     },
-    []
+    [setOnline]
   )
 
   useEffect(() => {
@@ -126,6 +134,12 @@ export default function Scan() {
         </span>
       </label>
 
+      {online ? (
+        <p className="conn on">Terhubung ke server</p>
+      ) : (
+        <p className="conn off" role="alert">Tidak ada internet. Scan tidak akan tercatat sampai koneksi kembali.</p>
+      )}
+
       <div className="viewfinder">
         <div id={READER_ID} />
         {camError && (
@@ -160,6 +174,8 @@ const RESULT_COPY = {
   inactive: { tone: 'stop', title: 'Checkpoint nonaktif' },
   invalid_checkpoint: { tone: 'stop', title: 'Checkpoint tidak ditemukan' },
   forbidden: { tone: 'stop', title: 'Tidak punya akses' },
+  offline: { tone: 'stop', title: 'Tidak ada internet' },
+  timeout: { tone: 'stop', title: 'Server tidak merespons' },
   error: { tone: 'stop', title: 'Gagal terhubung ke server' },
 }
 
@@ -174,6 +190,8 @@ function ResultOverlay({ result, checkpoint, onClose }) {
   else if (result.status === 'inactive') detail = 'Pilih checkpoint lain atau minta admin mengaktifkannya.'
   else if (result.status === 'invalid_checkpoint') detail = 'Muat ulang halaman lalu pilih checkpoint lagi.'
   else if (result.status === 'forbidden') detail = 'Role Anda tidak diizinkan scan di checkpoint ini. Hubungi admin.'
+  else if (result.status === 'offline') detail = 'Scan belum tercatat. Periksa Wi-Fi atau data seluler, lalu scan ulang.'
+  else if (result.status === 'timeout') detail = 'Status check-in belum pasti. Scan ulang: kalau ternyata sudah tercatat, hasilnya "Sudah check-in".'
   else if (result.status === 'error') detail = `${result.message}. Periksa koneksi internet, lalu scan ulang.`
 
   return (
