@@ -4,7 +4,7 @@ import { tr, useLang } from '../../lib/i18n.jsx'
 import { useAuth } from '../../lib/auth.jsx'
 import BrandMark from '../../components/BrandMark.jsx'
 import {
-  ABOUT, ATTEND, COMMUNITY, EVENT, FAQ, GAINS, INTRO, JOURNEY, PARTNERS, PARTNERS_TEXT, PROGRAMME, ROUTES,
+  ATTEND, COMMUNITY, EVENT, FAQ, GAINS, INTRO, PARTNERS, PARTNERS_TEXT, PROGRAMME, ROUTES,
   SESSION_ROOM, SPEAKERS, SPEAKER_ORDER,
 } from './content.js'
 import './home.css'
@@ -12,7 +12,6 @@ import './home.css'
 const L = (x) => (typeof x === 'string' ? x : tr(x.id, x.en))
 
 const NAV = [
-  { id: 'about', label: { id: 'Tentang', en: 'About' } },
   { id: 'programme', label: { id: 'Agenda', en: 'Programme' } },
   { id: 'speakers', label: { id: 'Pembicara', en: 'Speakers' } },
   { id: 'partners', label: { id: 'Partner', en: 'Partners' } },
@@ -34,6 +33,13 @@ const ICON = {
   plane: 'M10.5 13.5 3 11l1.5-1.5 7.5 1 4-4a2 2 0 0 1 3 3l-4 4 1 7.5L15.5 22 13 14.5',
   train: 'M7 3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3ZM4 10h16M8 21l2-4M16 21l-2-4M8 14h.01M16 14h.01',
   car: 'M5 16h14M6 16l1.5-5h9L18 16M5 16v3M19 16v3M8 13.5h.01M16 13.5h.01',
+  // Ikon bagian Manfaat
+  compass: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z',
+  mic: 'M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3ZM5 11a7 7 0 0 0 14 0M12 18v3M8 21h8',
+  book: 'M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h14M8 7h8M8 11h5',
+  shield: 'M12 3 20 6v6c0 5-3.4 8.3-8 9.5C7.4 20.3 4 17 4 12V6l8-3ZM9 12l2 2 4-4',
+  network: 'M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM19 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 8v4l-5.3 4.4M12 12l5.3 4.4',
+  link: 'M9 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM15 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z',
 }
 
 function Icon({ name, size = 20 }) {
@@ -61,7 +67,6 @@ export default function Home() {
       <Header />
       <main id="main">
         <Hero />
-        <About />
         <Gains />
         <Programme onSpeaker={setSpeaker} />
         <Speakers onSpeaker={setSpeaker} />
@@ -285,33 +290,6 @@ function SectionHead({ eyebrow, title, intro }) {
   )
 }
 
-function About() {
-  return (
-    <section className="lp-section" id="about">
-      <div className="lp-wrap lp-about">
-        <div>
-          <SectionHead eyebrow={tr('Tentang forum', 'About the forum')} title="Navigating Uncertainty" />
-          {ABOUT.map((p, i) => <p key={i} className={i === 0 ? 'lp-about-lead' : ''}>{L(p)}</p>)}
-        </div>
-        <figure className="lp-about-figure">
-          <img src="/landing/banner.webp" alt={tr('Tim keamanan maritim di pelabuhan energi saat malam', 'Maritime security team at an energy port at night')} loading="lazy" width="1200" height="540" />
-          <figcaption>
-            <p className="lp-eyebrow">{tr('Dari kesadaran menuju aksi', 'From awareness to action')}</p>
-            <ol className="lp-journey">
-              {JOURNEY.map((j, i) => (
-                <li key={i}>
-                  <span>{i + 1}</span>
-                  {L(j)}
-                </li>
-              ))}
-            </ol>
-          </figcaption>
-        </figure>
-      </div>
-    </section>
-  )
-}
-
 function Gains() {
   return (
     <section className="lp-section lp-section-alt">
@@ -320,7 +298,10 @@ function Gains() {
         <ol className="lp-gains">
           {GAINS.map((g, i) => (
             <li key={i}>
-              <span className="lp-gain-num">{String(i + 1).padStart(2, '0')}</span>
+              <div className="lp-gain-top">
+                <span className="lp-gain-icon"><Icon name={g.icon} size={26} /></span>
+                <span className="lp-gain-num">{String(i + 1).padStart(2, '0')}</span>
+              </div>
               <h3>{L(g.title)}</h3>
               <p>{L(g.body)}</p>
             </li>
@@ -490,14 +471,24 @@ function Attend() {
   return (
     <section className="lp-section">
       <div className="lp-wrap lp-attend">
-        <SectionHead
-          eyebrow={tr('Peserta', 'Audience')}
-          title={tr('Siapa yang sebaiknya hadir', 'Who should attend')}
-          intro={tr(
-            'Keamanan maritim kini lintas fungsi. Forum ini relevan untuk siapa pun yang melindungi, mengelola, mengatur, atau mendukung operasi maritim.',
-            'Maritime security is now cross-functional. The forum is relevant to anyone who protects, manages, regulates, or enables maritime operations.'
-          )}
-        />
+        <div className="lp-attend-intro">
+          <SectionHead
+            eyebrow={tr('Peserta', 'Audience')}
+            title={tr('Siapa yang sebaiknya hadir', 'Who should attend')}
+            intro={tr(
+              'Keamanan maritim kini lintas fungsi. Forum ini relevan untuk siapa pun yang melindungi, mengelola, mengatur, atau mendukung operasi maritim.',
+              'Maritime security is now cross-functional. The forum is relevant to anyone who protects, manages, regulates, or enables maritime operations.'
+            )}
+          />
+          <img
+            className="lp-attend-img"
+            src="/landing/banner.webp"
+            alt={tr('Tim keamanan maritim di pelabuhan energi saat malam', 'Maritime security team at an energy port at night')}
+            loading="lazy"
+            width="1400"
+            height="630"
+          />
+        </div>
         <ul className="lp-attend-list">
           {ATTEND.map((a, i) => (
             <li key={i}>

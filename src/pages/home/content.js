@@ -19,54 +19,35 @@ export const INTRO = {
   en: 'A strategic forum bringing together maritime, energy, government, defence, security and technology leaders to understand emerging risk, strengthen decision-making and build resilience across the maritime ecosystem.',
 }
 
-export const ABOUT = [
-  {
-    id: 'Maritime Security Forum (MSF) 2026 mempertemukan pemimpin industri maritim dan energi, perwakilan pemerintah dan pertahanan, profesional keamanan, penyedia teknologi, serta pakar internasional untuk membahas tantangan sektor maritim yang terus berkembang.',
-    en: 'Maritime Security Forum (MSF) 2026 brings together maritime and energy industry leaders, government and defence representatives, security professionals, technology providers, and international experts to address the evolving challenges facing the maritime sector.',
-  },
-  {
-    id: 'Melalui wawasan pakar, diskusi strategis, dan berbagi pengetahuan, forum ini membahas ancaman yang muncul, lanskap risiko yang berubah, teknologi keamanan, dan pendekatan praktis untuk memperkuat pengambilan keputusan berbasis risiko dan ketahanan operasional.',
-    en: 'Through expert insights, strategic discussions, and knowledge sharing, the forum explores emerging threats, evolving risk landscapes, security technologies, and practical approaches to strengthening risk-informed decision-making and operational resilience.',
-  },
-  {
-    id: 'Lebih dari sekadar bertukar pandangan, MSF 2026 bertujuan membangun kolaborasi yang bermakna dan komunitas keamanan maritim yang lebih kuat dan terhubung, yang mampu menghadapi ketidakpastian dan tantangan di masa depan.',
-    en: 'Beyond exchanging perspectives, MSF 2026 aims to foster meaningful collaboration and build a stronger, more connected maritime security community capable of navigating uncertainty and responding to future challenges.',
-  },
-]
-
-// Alur dari halaman About: dari kesadaran menuju ketahanan
-export const JOURNEY = [
-  { id: 'Kesadaran', en: 'Awareness' },
-  { id: 'Pemahaman', en: 'Understanding' },
-  { id: 'Penilaian risiko', en: 'Risk Assessment' },
-  { id: 'Pengambilan keputusan', en: 'Decision-Making' },
-  { id: 'Kapabilitas', en: 'Capability' },
-  { id: 'Ketahanan', en: 'Resilience' },
-]
-
 export const GAINS = [
   {
     title: { id: 'Wawasan strategis', en: 'Strategic Insights' },
+    icon: 'compass',
     body: { id: 'Pahami lebih dalam lanskap keamanan maritim dan risiko geopolitik yang terus berubah.', en: 'Gain a deeper understanding of the evolving maritime security and geopolitical risk landscape.' },
   },
   {
     title: { id: 'Perspektif pakar', en: 'Expert Perspectives' },
+    icon: 'mic',
     body: { id: 'Dengar langsung pandangan pakar maritim, keamanan, pemerintah, dan industri.', en: 'Hear perspectives directly from maritime, security, government, and industry experts.' },
   },
   {
     title: { id: 'Praktik terbaik & studi kasus', en: 'Best Practices & Case Studies' },
+    icon: 'book',
     body: { id: 'Belajar dari pengalaman nyata, pelajaran yang dipetik, dan pendekatan keamanan maritim yang sudah terbukti.', en: 'Learn from real-world experiences, lessons learned, and proven approaches to maritime security.' },
   },
   {
     title: { id: 'Mitigasi risiko praktis', en: 'Practical Risk Mitigation' },
+    icon: 'shield',
     body: { id: 'Temukan pendekatan praktis untuk memperkuat kesiapsiagaan, respons, dan ketahanan operasional.', en: 'Discover practical approaches to strengthen preparedness, response, and operational resilience.' },
   },
   {
     title: { id: 'Jejaring profesional', en: 'Professional Networking' },
+    icon: 'network',
     body: { id: 'Terhubung dengan profesional maritim, praktisi keamanan, regulator, dan pemangku kepentingan utama industri.', en: 'Connect with maritime professionals, security practitioners, regulators, and key industry stakeholders.' },
   },
   {
     title: { id: 'Peluang kolaborasi', en: 'Collaboration Opportunities' },
+    icon: 'link',
     body: { id: 'Jajaki peluang koordinasi yang lebih kuat, berbagi pengetahuan, dan kolaborasi lintas sektor.', en: 'Explore opportunities for stronger coordination, knowledge sharing, and cross-sector collaboration.' },
   },
 ]

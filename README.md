@@ -7,7 +7,7 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 
 ## Peran
 
-- **Publik**: landing page acara di `/` (tentang forum, agenda dua hari, profil 16 pembicara, partner, lokasi dan rute, FAQ, tombol registrasi dan grup WhatsApp). Isi diambil dari maritimesecurityforum.com, ada di `src/pages/home/content.js`, gambar di `public/landing/`. Tombol "Masuk petugas" membuka `/login`; setelah masuk, petugas diarahkan lewat `/app` ke halaman kerjanya.
+- **Publik**: landing page acara di `/` (manfaat, agenda dua hari, profil 16 pembicara, partner, lokasi dan rute, FAQ, tombol registrasi dan grup WhatsApp). Isi diambil dari maritimesecurityforum.com, ada di `src/pages/home/content.js`, gambar di `public/landing/`. Tombol "Masuk petugas" membuka `/login`; setelah masuk, petugas diarahkan lewat `/app` ke halaman kerjanya.
 - **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas (lewat ikon pengaturan di kanan atas), batalkan check-in, reset semua check-in per checkpoint dari Dashboard.
 - **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya (ada tanda koneksi; saat internet putus, scan ditolak dengan jelas, bukan diam-diam hilang), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
 - **Semua akun**: ikon pengaturan di kanan atas berisi pilihan bahasa (IDN/ENG, tersimpan per perangkat) dan Keluar. Bahasa juga bisa dipilih di halaman login.
