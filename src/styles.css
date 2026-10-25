@@ -453,6 +453,8 @@ dd { margin: 0; overflow-wrap: anywhere; }
 }
 .demo-bar .btn-link { color: #ffe1a3; }
 .login-lang { justify-self: center; width: 160px; }
+.login-home { justify-self: center; color: var(--muted); font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.login-home:hover { color: var(--cyan); }
 .demo-accounts { display: grid; gap: 0.45rem; padding-top: 1rem; border-top: 1px dashed var(--border); }
 .demo-accounts p { margin: 0; font-size: 0.8rem; color: var(--muted); }
 .demo-accounts .btn { justify-content: flex-start; font-weight: 600; white-space: normal; text-align: left; }

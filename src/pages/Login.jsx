@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { demo, supabase } from '../lib/supabase.js'
 import { DEMO_ACCOUNTS } from '../lib/demo.js'
 import { useAuth } from '../lib/auth.jsx'
@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (!loading && session) return <Navigate to="/" replace />
+  if (!loading && session) return <Navigate to="/app" replace />
 
   async function submit(e) {
     e.preventDefault()
@@ -25,7 +25,7 @@ export default function Login() {
     if (error) {
       setError(error.message === 'Invalid login credentials' ? tr('Email atau kata sandi salah.', 'Wrong email or password.') : error.message)
     } else {
-      navigate('/', { replace: true })
+      navigate('/app', { replace: true })
     }
   }
 
@@ -75,6 +75,7 @@ export default function Login() {
             <button type="button" className={lang === 'id' ? 'active' : ''} aria-pressed={lang === 'id'} onClick={() => setLang('id')}>IDN</button>
             <button type="button" className={lang === 'en' ? 'active' : ''} aria-pressed={lang === 'en'} onClick={() => setLang('en')}>ENG</button>
           </div>
+          <Link className="login-home" to="/">← {tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
         </div>
       </form>
     </div>

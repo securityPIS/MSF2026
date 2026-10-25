@@ -14,6 +14,7 @@ import Participants from './pages/admin/Participants.jsx'
 import Import from './pages/admin/Import.jsx'
 import Checkpoints from './pages/admin/Checkpoints.jsx'
 import Staff from './pages/admin/Staff.jsx'
+import Home from './pages/home/Home.jsx'
 import { tr, useLang } from './lib/i18n.jsx'
 
 export default function App() {
@@ -56,7 +57,9 @@ export default function App() {
               <Route path="/admin/checkpoints" element={admin(<Checkpoints />)} />
               <Route path="/admin/staff" element={admin(<Staff />)} />
             </Route>
-            <Route path="*" element={<Home />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/app" element={<StaffHome />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Fragment>
       </AuthProvider>
@@ -88,7 +91,8 @@ function DemoBar() {
   )
 }
 
-function Home() {
+// Setelah login: arahkan ke halaman pertama yang boleh dibuka akun ini
+function StaffHome() {
   const { session, profile, loading } = useAuth()
   if (loading) return <FullMessage title={tr('Memuat…', 'Loading…')} />
   if (!session) return <Navigate to="/login" replace />
