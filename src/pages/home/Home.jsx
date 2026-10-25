@@ -528,11 +528,12 @@ function SpeakerDialog({ speakerKey, onClose }) {
 
 function Attend() {
   return (
-    <section className="lp-section lp-light lp-attend-section">
-      <div className="lp-attend-banner lp-dark">
-        <img src="/landing/banner.webp" alt="" loading="lazy" width="1400" height="630" />
-        <Deco kind="waves" className="lp-deco-banner" />
-        <div className="lp-wrap">
+    <section className="lp-section lp-dark lp-attend-section">
+      <Deco kind="waves" className="lp-deco-wave-top" />
+      <Deco kind="waves" className="lp-deco-wave-mid" />
+      <Deco kind="waves" className="lp-deco-bottom" />
+      <div className="lp-wrap">
+        <div className="lp-attend-head">
           <p className="lp-eyebrow lp-eyebrow-line">{tr('Komunitas kami', 'Our community')}</p>
           <h2>
             {tr('Siapa yang sebaiknya', 'Who should')} <span>{tr('hadir', 'attend')}</span>
@@ -544,8 +545,6 @@ function Attend() {
             )}
           </p>
         </div>
-      </div>
-      <div className="lp-wrap">
         <ul className="lp-attend-grid">
           {ATTEND.map((a, i) => (
             <li key={i}>
@@ -587,6 +586,14 @@ function Venue() {
       <Deco kind="route" className="lp-deco-bl" />
       <div className="lp-wrap lp-venue">
         <div className="lp-venue-card lp-dark">
+          <img
+            className="lp-venue-photo"
+            src="/landing/venue.jpg"
+            alt={tr('Gedung Patra Cirebon Hotel & Convention', 'Patra Cirebon Hotel & Convention building')}
+            loading="lazy"
+            width="678"
+            height="452"
+          />
           <Deco kind="compass" className="lp-deco-card" />
           <SectionHead eyebrow={tr('Lokasi', 'Venue')} title={EVENT.venue} />
           <p className="lp-venue-room">{SESSION_ROOM}</p>
