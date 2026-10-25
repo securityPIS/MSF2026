@@ -24,7 +24,6 @@ const ICON = {
   pin: 'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21ZM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
   clock: 'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z',
   arrow: 'M5 12h14M13 6l6 6-6 6',
-  external: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   menu: 'M4 7h16M4 12h16M4 17h16',
   close: 'M6 6l12 12M18 6 6 18',
   chat: 'M4 20l1.5-4A8 8 0 1 1 8 18.5L4 20Z',
@@ -51,7 +50,6 @@ const ICON = {
   lifebuoy: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6',
   chip: 'M8 6h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM10 10h4v4h-4ZM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4',
   bookOpen: 'M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2V5ZM22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7V5Z',
-  users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6',
 }
 
 // Ornamen latar bertema keamanan maritim: radar, gelombang, jalur pelayaran, mata angin
@@ -211,9 +209,6 @@ function Header() {
         <div className="lp-header-actions">
           <LangSwitch />
           <StaffButton className="lp-hide-sm" />
-          <a className="lp-btn lp-btn-primary lp-hide-sm" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-            {tr('Daftar', 'Register')}
-          </a>
           <button
             className="lp-menu-btn"
             aria-label={open ? tr('Tutup menu', 'Close menu') : tr('Buka menu', 'Open menu')}
@@ -234,10 +229,6 @@ function Header() {
             </a>
           ))}
           <div className="lp-mobile-cta">
-            <a className="lp-btn lp-btn-primary" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-              {tr('Daftar sekarang', 'Register now')}
-              <Icon name="external" size={18} />
-            </a>
             <StaffButton />
           </div>
         </nav>
@@ -306,16 +297,14 @@ function Hero() {
           </p>
           <p className="lp-lead">{L(INTRO)}</p>
           <div className="lp-hero-cta">
-            <a className="lp-btn lp-btn-primary lp-btn-lg" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-              {tr('Daftar sekarang', 'Register now')}
-              <Icon name="external" size={18} />
-            </a>
-            <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#programme">
+            <a className="lp-btn lp-btn-primary lp-btn-lg" href="#programme">
               {tr('Lihat agenda', 'View programme')}
               <Icon name="arrow" size={18} />
             </a>
+            <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#speakers">
+              {tr('Lihat pembicara', 'Meet the speakers')}
+            </a>
           </div>
-          <p className="lp-seats">{tr('Kursi terbatas', 'Limited seats')}</p>
         </div>
         <aside className="lp-hero-card" aria-label={tr('Ringkasan acara', 'Event summary')}>
           <Countdown />
@@ -568,13 +557,6 @@ function Attend() {
             </li>
           ))}
         </ul>
-        <div className="lp-attend-cta">
-          <span className="lp-attend-cta-icon"><Icon name="users" size={34} /></span>
-          <p>{tr('Keahlian Anda dibutuhkan dalam percakapan ini.', 'Your expertise belongs in the conversation.')}</p>
-          <a className="lp-btn lp-btn-primary lp-btn-lg" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-            {tr('Daftar sekarang', 'Register now')}
-          </a>
-        </div>
       </div>
     </section>
   )
@@ -688,11 +670,7 @@ function Community() {
             <p>{L(COMMUNITY.body)}</p>
           </div>
           <div className="lp-community-cta">
-            <a className="lp-btn lp-btn-primary lp-btn-lg" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-              {tr('Daftar forum', 'Register for the forum')}
-              <Icon name="external" size={18} />
-            </a>
-            <a className="lp-btn lp-btn-ghost lp-btn-lg" href={EVENT.whatsappUrl} target="_blank" rel="noreferrer">
+            <a className="lp-btn lp-btn-primary lp-btn-lg" href={EVENT.whatsappUrl} target="_blank" rel="noreferrer">
               <Icon name="chat" size={18} />
               {tr('Gabung grup WhatsApp', 'Join the WhatsApp group')}
             </a>
@@ -726,9 +704,6 @@ function Footer() {
           {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
         </nav>
         <div className="lp-footer-cta">
-          <a className="lp-btn lp-btn-primary" href={EVENT.registerUrl} target="_blank" rel="noreferrer">
-            {tr('Daftar sekarang', 'Register now')}
-          </a>
           <StaffButton />
         </div>
       </div>

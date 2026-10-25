@@ -4,7 +4,6 @@
 export const EVENT = {
   start: '2026-10-29T08:50:00+07:00',
   end: '2026-10-30T16:35:00+07:00',
-  registerUrl: 'https://maritimesecurityforum.com/registration',
   whatsappUrl: 'https://chat.whatsapp.com/Ifjrk5eTPnf1yrGYVOpN9Y?s=sw&p=i&mlu=4&ilr=4',
   mapUrl: 'https://maps.app.goo.gl/PUseP7ganFG6Le6YA',
   trainUrl: 'https://www.kai.id/layanan/access-by-kai',
