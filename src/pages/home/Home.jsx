@@ -49,6 +49,7 @@ const ICON = {
   lock: 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1ZM8 11V8a4 4 0 0 1 8 0v3M12 15v2',
   lifebuoy: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6',
   chip: 'M8 6h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM10 10h4v4h-4ZM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4',
+  spark: 'M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3ZM19 3v4M17 5h4',
   bookOpen: 'M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2V5ZM22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7V5Z',
 }
 
@@ -529,6 +530,7 @@ function SpeakerDialog({ speakerKey, onClose }) {
 function Attend() {
   return (
     <section className="lp-section lp-dark lp-attend-section">
+      <img className="lp-attend-photo" src="/landing/banner.webp" alt="" loading="lazy" width="1400" height="630" />
       <Deco kind="waves" className="lp-deco-wave-top" />
       <Deco kind="waves" className="lp-deco-wave-mid" />
       <Deco kind="waves" className="lp-deco-bottom" />
