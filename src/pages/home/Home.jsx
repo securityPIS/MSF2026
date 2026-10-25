@@ -174,6 +174,15 @@ function LangSwitch() {
 function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [menuTop, setMenuTop] = useState(0)
+  const headerRef = useRef(null)
+
+  // Menu HP dirender di luar <header>: backdrop-filter pada header membuat elemen fixed di dalamnya
+  // ikut terkurung setinggi header, sehingga daftar menu terpotong.
+  function toggleMenu() {
+    if (!open) setMenuTop(Math.max(0, headerRef.current?.getBoundingClientRect().bottom ?? 0))
+    setOpen((v) => !v)
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -194,34 +203,36 @@ function Header() {
   }, [open])
 
   return (
-    <header className={`lp-header ${scrolled || open ? 'solid' : ''}`}>
-      <div className="lp-wrap lp-header-row">
-        <a className="lp-brand" href="#top" aria-label="Maritime Security Forum 2026" onClick={() => setOpen(false)}>
-          <BrandMark size={34} />
-          <span>
-            <b>Maritime Security</b>
-            <small>Forum 2026</small>
-          </span>
-        </a>
-        <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
-          {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
-        </nav>
-        <div className="lp-header-actions">
-          <LangSwitch />
-          <StaffButton className="lp-hide-sm" />
-          <button
-            className="lp-menu-btn"
-            aria-label={open ? tr('Tutup menu', 'Close menu') : tr('Buka menu', 'Open menu')}
-            aria-expanded={open}
-            aria-controls="lp-mobile-nav"
-            onClick={() => setOpen((v) => !v)}
-          >
-            <Icon name={open ? 'close' : 'menu'} size={22} />
-          </button>
+    <>
+      <header ref={headerRef} className={`lp-header ${scrolled || open ? 'solid' : ''}`}>
+        <div className="lp-wrap lp-header-row">
+          <a className="lp-brand" href="#top" aria-label="Maritime Security Forum 2026" onClick={() => setOpen(false)}>
+            <BrandMark size={34} />
+            <span>
+              <b>Maritime Security</b>
+              <small>Forum 2026</small>
+            </span>
+          </a>
+          <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
+            {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
+          </nav>
+          <div className="lp-header-actions">
+            <LangSwitch />
+            <StaffButton className="lp-hide-sm" />
+            <button
+              className="lp-menu-btn"
+              aria-label={open ? tr('Tutup menu', 'Close menu') : tr('Buka menu', 'Open menu')}
+              aria-expanded={open}
+              aria-controls="lp-mobile-nav"
+              onClick={toggleMenu}
+            >
+              <Icon name={open ? 'close' : 'menu'} size={22} />
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
       {open && (
-        <nav id="lp-mobile-nav" className="lp-mobile-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
+        <nav id="lp-mobile-nav" className="lp-mobile-nav" style={{ top: menuTop }} aria-label={tr('Navigasi halaman', 'Page navigation')}>
           {NAV.map((n) => (
             <a key={n.id} href={`#${n.id}`} onClick={() => setOpen(false)}>
               {L(n.label)}
@@ -233,7 +244,7 @@ function Header() {
           </div>
         </nav>
       )}
-    </header>
+    </>
   )
 }
 

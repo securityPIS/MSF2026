@@ -76,7 +76,7 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp-lang button.active { background: var(--panel-strong); color: #fff; box-shadow: inset 0 0 0 1px rgba(72, 214, 255, 0.5); }
 .lp-menu-btn { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.06); color: #fff; cursor: pointer; }
 .lp-mobile-nav {
-  position: fixed; inset: var(--lp-header-h) 0 0; z-index: 49; overflow-y: auto;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 49; overflow-y: auto; /* top diisi dari tinggi header */
   display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem 20px 2rem;
   background: rgba(3, 16, 58, 0.98);
 }
@@ -204,19 +204,28 @@ html:has(.lp) { scroll-behavior: smooth; }
 }
 
 /* ---------- Pembicara ---------- */
-.lp-speakers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.lp-speakers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
 .lp-speakers button {
   display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; overflow: hidden;
   border: 1px solid var(--border); border-radius: 18px; background: var(--panel); color: inherit; font: inherit; text-align: left; cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 .lp-speakers button:hover { transform: translateY(-3px); border-color: var(--border-strong); }
-.lp-speakers img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; background: #c9d4e6; }
-.lp-speaker-text { display: grid; gap: 0.15rem; padding: 0.8rem 0.85rem 1rem; }
-.lp-speaker-text b { font-size: 0.92rem; line-height: 1.25; }
-.lp-speaker-text small { color: var(--ink-soft); font-size: 0.78rem; line-height: 1.3; }
-.lp-speaker-text em { color: var(--cyan); font-size: 0.76rem; font-style: normal; font-weight: 700; }
-@media (min-width: 640px) { .lp-speakers { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; } }
+.lp-speakers img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; object-position: top; background: #c9d4e6; }
+/* HP: 4 kotak per baris; jabatan disembunyikan supaya muat, lengkapnya di profil */
+.lp-speakers button { border-radius: 12px; }
+.lp-speaker-text { display: grid; gap: 0.15rem; padding: 0.45rem 0.4rem 0.55rem; }
+.lp-speaker-text b { font-size: 0.64rem; line-height: 1.2; }
+.lp-speaker-text small { display: none; color: var(--ink-soft); font-size: 0.78rem; line-height: 1.3; }
+.lp-speaker-text em { color: var(--cyan); font-size: 0.56rem; line-height: 1.2; font-style: normal; font-weight: 700; }
+@media (min-width: 640px) {
+  .lp-speakers { gap: 1rem; }
+  .lp-speakers button { border-radius: 18px; }
+  .lp-speaker-text { padding: 0.8rem 0.85rem 1rem; }
+  .lp-speaker-text b { font-size: 0.92rem; line-height: 1.25; }
+  .lp-speaker-text small { display: block; }
+  .lp-speaker-text em { font-size: 0.76rem; }
+}
 @media (min-width: 960px) { .lp-speakers { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; } .lp-speaker-text b { font-size: 1rem; } }
 
 /* Dialog profil pembicara: lembar bawah di HP, kartu tengah di layar lebar */
@@ -268,26 +277,31 @@ html:has(.lp) { scroll-behavior: smooth; }
   mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
   -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
 }
-.lp-attend-grid { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+/* HP: 5 kotak per baris, hanya ikon dan judul kecil; deskripsi tampil mulai 560px */
+.lp-attend-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
 .lp-attend-grid li {
-  display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0.9rem; align-items: center;
-  padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px;
+  display: grid; justify-items: center; align-content: start; gap: 0.4rem; text-align: center;
+  padding: 0.6rem 0.2rem 0.65rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px;
   background: rgba(3, 16, 58, 0.38); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 10px 28px rgba(2, 10, 40, 0.2);
   transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 .lp-attend-grid li:hover { transform: translateY(-3px); background: rgba(3, 16, 58, 0.52); border-color: rgba(72, 214, 255, 0.55); }
-.lp-attend-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: rgba(72, 214, 255, 0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(72, 214, 255, 0.45); }
-.lp-attend-grid h3 { margin: 0 0 0.25rem; font-size: 1rem; line-height: 1.3; color: #fff; }
-.lp-attend-grid p { margin: 0; color: #cfe0ff; font-size: 0.9rem; line-height: 1.45; }
+.lp-attend-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(72, 214, 255, 0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(72, 214, 255, 0.45); }
+.lp-attend-icon svg { width: 18px; height: 18px; }
+.lp-attend-grid h3 { margin: 0; font-size: 0.56rem; line-height: 1.2; color: #fff; overflow-wrap: anywhere; hyphens: auto; }
+.lp-attend-grid p { display: none; margin: 0; color: #cfe0ff; font-size: 0.9rem; line-height: 1.45; }
 @media (min-width: 560px) {
-  .lp-attend-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lp-attend-grid li { grid-template-columns: 1fr; justify-items: center; align-content: start; text-align: center; padding: 1.5rem 1rem 1.6rem; }
-  .lp-attend-icon { width: 64px; height: 64px; }
+  .lp-attend-grid { gap: 0.6rem; }
+  .lp-attend-grid li { gap: 0.6rem; padding: 1rem 0.5rem 1.1rem; border-radius: 16px; }
+  .lp-attend-icon { width: 46px; height: 46px; }
+  .lp-attend-icon svg { width: 22px; height: 22px; }
+  .lp-attend-grid h3 { margin: 0 0 0.25rem; font-size: 0.76rem; }
+  .lp-attend-grid p { display: block; font-size: 0.7rem; }
 }
 /* Layar lebar: 5 kartu per baris (10 kartu = 2 baris penuh), teks dan ikon diperkecil */
 @media (min-width: 820px) {
-  .lp-attend-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.75rem; }
+  .lp-attend-grid { gap: 0.75rem; }
   .lp-attend-grid li { padding: 1.15rem 0.7rem 1.25rem; gap: 0.7rem; }
   .lp-attend-icon { width: 52px; height: 52px; }
   .lp-attend-icon svg { width: 24px; height: 24px; }
