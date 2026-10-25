@@ -102,11 +102,6 @@ export const ATTEND = [
     title: { id: 'Akademisi & peneliti', en: 'Academics & researchers' },
     desc: { id: 'Menghubungkan bukti dengan praktik.', en: 'Connect evidence with practice.' },
   },
-  {
-    icon: 'spark',
-    title: { id: 'Enthusiast keamanan maritim', en: 'Maritime security enthusiasts' },
-    desc: { id: 'Belajar, berbagi, dan terhubung dengan komunitas.', en: 'Learn, share, and connect with the community.' },
-  },
 ]
 
 const P = '/landing/speakers/'
