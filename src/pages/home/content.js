@@ -252,13 +252,6 @@ export const SPEAKERS = {
       'Additionally, Agent Regula was a member of the FBI’s elite Evidence Response Team (ERT) where she managed major crime scene investigations in the United States and overseas, to include deployment to the World Trade Center attacks. Agent Regula was a certified FBI Adjunct Professor in the fields of Interview and Interrogation, and Crime Scene Management.',
     ],
   },
-  daniel: {
-    name: 'Daniel J. Molina',
-    role: 'Chief Revenue Officer',
-    org: 'SensAI',
-    photo: P + 'daniel-j-molina.webp',
-    bio: [],
-  },
   cholan: {
     name: 'Dr. Cholan V',
     role: 'Scientific and Operations Lead',
@@ -299,7 +292,7 @@ export const PROGRAMME = [
       { time: '10:35 – 11:35', title: 'Cybersecurity and Risk Management: Mitigating the Threat of Attacks', speakers: ['richard'] },
       { time: '13:35 – 14:35', title: 'Medical Evacuation in Maritime Operations: Lessons, Challenges and Prevention Strategies', speakers: ['jeremy', 'aaron'] },
       { time: '14:35 – 15:35', title: 'Beyond Type Approval: Defining the New Standard for Critical Maritime & Onshore Security', speakers: ['klaus'] },
-      { time: '15:35 – 16:35', title: 'Innovative Strategies and Technologies for Resilient Maritime Security', speakers: ['josefina', 'daniel', 'cholan'] },
+      { time: '15:35 – 16:35', title: 'Innovative Strategies and Technologies for Resilient Maritime Security', speakers: ['josefina', 'cholan'] },
     ],
   },
 ]

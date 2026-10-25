@@ -515,7 +515,7 @@ function Partners() {
   return (
     <section className="lp-section lp-section-alt" id="partners">
       <div className="lp-wrap">
-        <SectionHead eyebrow="Partner" title={tr('Didukung oleh', 'Supported by')} intro={L(PARTNERS_TEXT)} />
+        <SectionHead eyebrow="MSF 2026" title={tr('Partner kami', 'Our partners')} intro={L(PARTNERS_TEXT)} />
         <ul className="lp-partners">
           {PARTNERS.map((p) => (
             <li key={p.name}>
