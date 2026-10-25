@@ -6,6 +6,7 @@ import KindIcon from '../../components/KindIcon.jsx'
 import Pager from '../../components/Pager.jsx'
 import { useAuth } from '../../lib/auth.jsx'
 import { isCheckpointScoped } from '../../lib/permissions.js'
+import { locale, tr } from '../../lib/i18n.jsx'
 
 const FEED_PAGE = 5
 
@@ -69,15 +70,15 @@ export default function Dashboard() {
     }
     const sheet = XLSX.utils.json_to_sheet(
       rows.map((r) => ({
-        Waktu: new Date(r.checked_in_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+        [tr('Waktu', 'Time')]: new Date(r.checked_in_at).toLocaleString(locale(), { timeZone: 'Asia/Jakarta' }),
         Checkpoint: r.checkpoint?.name,
-        Nama: r.participant?.full_name,
+        [tr('Nama', 'Name')]: r.participant?.full_name,
         Company: r.participant?.organization,
         Department: r.participant?.division,
         'Job Title': r.participant?.job_title,
-        Kategori: r.participant?.category,
+        [tr('Kategori', 'Category')]: r.participant?.category,
         'Unique ID': r.participant?.qr_code,
-        Petugas: r.officer?.full_name,
+        [tr('Petugas', 'Staff')]: r.officer?.full_name,
       }))
     )
     const book = XLSX.utils.book_new()
@@ -89,7 +90,7 @@ export default function Dashboard() {
   if (!stats) {
     return (
       <div className="page">
-        <p>{error || 'Memuat dashboard…'}</p>
+        <p>{error || tr('Memuat dashboard…', 'Loading dashboard…')}</p>
       </div>
     )
   }
@@ -106,27 +107,27 @@ export default function Dashboard() {
           <h1>Dashboard</h1>
         </div>
         <div className="actions">
-          <span className={`live ${live ? 'on' : ''}`}>{live ? 'Update langsung' : 'Menyambungkan…'}</span>
+          <span className={`live ${live ? 'on' : ''}`}>{live ? tr('Update langsung', 'Live updates') : tr('Menyambungkan…', 'Connecting…')}</span>
           <button className="btn" onClick={exportExcel} disabled={exporting}>
-            {exporting ? 'Menyiapkan…' : 'Unduh laporan Excel'}
+            {exporting ? tr('Menyiapkan…', 'Preparing…') : tr('Unduh laporan Excel', 'Download Excel report')}
           </button>
         </div>
       </div>
       {error && <p className="notice error">{error}</p>}
       {scoped && (
         <p className="scope-note">
-          Data sesuai role <b>{profile.perm.name}</b>: {stats.checkpoints.map((c) => c.name).join(', ') || 'belum ada checkpoint'}
+          {tr('Data sesuai role', 'Data for role')} <b>{profile.perm.name}</b>: {stats.checkpoints.map((c) => c.name).join(', ') || tr('belum ada checkpoint', 'no checkpoints yet')}
         </p>
       )}
 
       {badge && (
         <section className="hero" style={{ marginTop: 0 }}>
-          <p className="hero-label">Kedatangan peserta</p>
+          <p className="hero-label">{tr('Kedatangan peserta', 'Participant arrivals')}</p>
           <p className="hero-figure">
             <strong>
               {arrived} <small>/ {total}</small>
             </strong>
-            peserta sudah menukar badge ({pct(arrived, total)})
+            {tr('peserta sudah menukar badge', 'participants have collected their badge')} ({pct(arrived, total)})
           </p>
           <div className="bar" role="progressbar" aria-valuenow={arrived} aria-valuemin={0} aria-valuemax={total}>
             <span style={{ width: pct(arrived, total) }} />
@@ -147,7 +148,7 @@ export default function Dashboard() {
             onCancel={() => setResetting(false)}
             onDone={(names) => {
               setResetting(false)
-              setNotice(`Check-in di ${names.join(', ')} sudah direset.`)
+              setNotice(tr(`Check-in di ${names.join(', ')} sudah direset.`, `Check-ins at ${names.join(', ')} have been reset.`))
               load()
             }}
           />
@@ -161,18 +162,18 @@ export default function Dashboard() {
                 <h3 className="card-title">{c.name}</h3>
                 <p className="card-sub">
                   {KIND_LABEL[c.kind]}
-                  {!c.is_active && ' · Nonaktif'}
+                  {!c.is_active && ` · ${tr('Nonaktif', 'Inactive')}`}
                 </p>
               </div>
-              <div className="cp-row-stat"><b>{c.total_scans}</b><span>Total scan</span></div>
-              <div className="cp-row-stat"><b>{c.today}</b><span>Hari ini</span></div>
+              <div className="cp-row-stat"><b>{c.total_scans}</b><span>{tr('Total scan', 'Total scans')}</span></div>
+              <div className="cp-row-stat"><b>{c.today}</b><span>{tr('Hari ini', 'Today')}</span></div>
             </li>
           ))}
         </ul>
       </section>
 
       <section>
-        <h2>Check-in terbaru</h2>
+        <h2>{tr('Check-in terbaru', 'Latest check-ins')}</h2>
         <RecentFeed tick={tick} />
       </section>
     </div>
@@ -194,7 +195,12 @@ function ResetCheckpoints({ checkpoints, onCancel, onDone }) {
       const { error } = await supabase.from('checkins').delete().eq('checkpoint_id', c.id)
       if (error) {
         setBusy(false)
-        setError(`Reset ${c.name} gagal: ${error.message}${done.length ? `. Yang sudah direset: ${done.join(', ')}.` : ''}`)
+        setError(
+          tr(
+            `Reset ${c.name} gagal: ${error.message}${done.length ? `. Yang sudah direset: ${done.join(', ')}.` : ''}`,
+            `Resetting ${c.name} failed: ${error.message}${done.length ? `. Already reset: ${done.join(', ')}.` : ''}`
+          )
+        )
         return
       }
       done.push(c.name)
@@ -205,7 +211,12 @@ function ResetCheckpoints({ checkpoints, onCancel, onDone }) {
 
   return (
     <div className="panel reset-panel">
-      <p className="hint">Pilih checkpoint yang mau direset. Semua check-in di checkpoint itu akan dihapus dan tidak bisa dikembalikan.</p>
+      <p className="hint">
+        {tr(
+          'Pilih checkpoint yang mau direset. Semua check-in di checkpoint itu akan dihapus dan tidak bisa dikembalikan.',
+          'Choose the checkpoints to reset. All check-ins at those checkpoints will be deleted and cannot be restored.'
+        )}
+      </p>
       <div className="reset-list">
         {checkpoints.map((c) => (
           <label key={c.id} className="check-card">
@@ -213,16 +224,16 @@ function ResetCheckpoints({ checkpoints, onCancel, onDone }) {
             <KindIcon kind={c.kind} size="sm" />
             <span>
               <b>{c.name}</b>
-              <small>{c.total_scans} check-in</small>
+              <small>{c.total_scans} {tr('check-in', c.total_scans === 1 ? 'check-in' : 'check-ins')}</small>
             </span>
           </label>
         ))}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="form-actions">
-        <button className="btn" onClick={onCancel} disabled={busy}>Batal</button>
+        <button className="btn" onClick={onCancel} disabled={busy}>{tr('Batal', 'Cancel')}</button>
         <button className="btn btn-danger-solid" onClick={reset} disabled={busy || picked.length === 0}>
-          {busy ? 'Mereset…' : 'OK RESET'}
+          {busy ? tr('Mereset…', 'Resetting…') : 'OK RESET'}
         </button>
       </div>
     </div>
@@ -255,15 +266,18 @@ function RecentFeed({ tick }) {
     }
   }, [page, tick])
 
-  if (rows === null) return <p className="hint">Memuat…</p>
+  if (rows === null) return <p className="hint">{tr('Memuat…', 'Loading…')}</p>
   if (total === 0) {
-    return <p className="empty">Belum ada check-in. Aktivitas scan petugas akan muncul di sini secara langsung.</p>
+    return <p className="empty">{tr('Belum ada check-in. Aktivitas scan petugas akan muncul di sini secara langsung.', 'No check-ins yet. Staff scans will appear here live.')}</p>
   }
 
   return (
     <>
       <p className="hint">
-        {total} check-in, menampilkan {page * FEED_PAGE + 1}–{page * FEED_PAGE + rows.length}
+        {tr(
+          `${total} check-in, menampilkan ${page * FEED_PAGE + 1}–${page * FEED_PAGE + rows.length}`,
+          `${total} check-in${total === 1 ? '' : 's'}, showing ${page * FEED_PAGE + 1}–${page * FEED_PAGE + rows.length}`
+        )}
       </p>
       <ul className="feed">
         {rows.map((r) => (
@@ -272,7 +286,7 @@ function RecentFeed({ tick }) {
             <span className="feed-name">{r.participant?.full_name}</span>
             <span className="feed-meta">
               {r.checkpoint?.name}
-              {r.officer?.full_name ? `, oleh ${r.officer.full_name}` : ''}
+              {r.officer?.full_name ? `, ${tr('oleh', 'by')} ${r.officer.full_name}` : ''}
               {r.participant?.organization ? ` · ${r.participant.organization}` : ''}
             </span>
             <time>{formatTime(r.checked_in_at)}</time>

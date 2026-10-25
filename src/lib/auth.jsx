@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabase.js'
 import { canMenu } from './permissions.js'
+import { tr } from './i18n.jsx'
 
 const AuthContext = createContext(null)
 
@@ -62,9 +63,12 @@ export function NoAccess() {
   const { session, signOut } = useAuth()
   return (
     <FullMessage
-      title="Akun belum punya akses"
-      body={`Akun ${session?.user?.email ?? ''} belum diberi peran petugas atau admin. Minta admin mengatur peran di menu Petugas.`}
-      action={<button className="btn" onClick={signOut}>Keluar</button>}
+      title={tr('Akun belum punya akses', 'This account has no access yet')}
+      body={tr(
+        `Akun ${session?.user?.email ?? ''} belum diberi peran petugas atau admin. Minta admin mengatur peran di menu Petugas.`,
+        `The account ${session?.user?.email ?? ''} has not been given an officer or admin role. Ask an admin to set the role in the Staff menu.`
+      )}
+      action={<button className="btn" onClick={signOut}>{tr('Keluar', 'Sign out')}</button>}
     />
   )
 }
@@ -73,11 +77,11 @@ export function RequireRole({ roles, children }) {
   const { session, profile, loading } = useAuth()
   const location = useLocation()
 
-  if (loading) return <FullMessage title="Memuat…" />
+  if (loading) return <FullMessage title={tr('Memuat…', 'Loading…')} />
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (!profile || !['admin', 'officer'].includes(profile.role)) return <NoAccess />
   if (!roles.includes(profile.role)) {
-    return <FullMessage title="Halaman khusus admin" body="Halaman ini hanya bisa dibuka admin." />
+    return <FullMessage title={tr('Halaman khusus admin', 'Admin-only page')} body={tr('Halaman ini hanya bisa dibuka admin.', 'Only admins can open this page.')} />
   }
   return children
 }
@@ -90,7 +94,10 @@ export function RequireMenu({ menu, children }) {
       {canMenu(profile, menu) ? (
         children
       ) : (
-        <FullMessage title="Menu tidak tersedia" body={`Role ${profile?.perm?.name ?? 'Anda'} tidak punya akses ke menu ini.`} />
+        <FullMessage
+          title={tr('Menu tidak tersedia', 'Menu not available')}
+          body={tr(`Role ${profile?.perm?.name ?? 'Anda'} tidak punya akses ke menu ini.`, `${profile?.perm?.name ? `The ${profile.perm.name} role` : 'Your role'} has no access to this menu.`)}
+        />
       )}
     </RequireRole>
   )

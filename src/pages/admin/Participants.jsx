@@ -8,6 +8,7 @@ import QrCode, { downloadQrCard } from '../../components/QrCode.jsx'
 import { useAuth } from '../../lib/auth.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import { canAddParticipants } from '../../lib/permissions.js'
+import { tr } from '../../lib/i18n.jsx'
 
 const PAGE = 5
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
@@ -82,13 +83,13 @@ export default function Participants() {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Data peserta</p>
-          <h1>Peserta</h1>
+          <p className="eyebrow">{tr('Data peserta', 'Participant data')}</p>
+          <h1>{tr('Peserta', 'Participants')}</h1>
         </div>
         {!adding && (
           <div className="actions">
-            {canAdd && <button className="btn btn-primary" onClick={startAdd}>+ Tambah peserta</button>}
-            {isAdmin && <Link className="btn" to="/admin/import">Impor dari Excel</Link>}
+            {canAdd && <button className="btn btn-primary" onClick={startAdd}>+ {tr('Tambah peserta', 'Add participant')}</button>}
+            {isAdmin && <Link className="btn" to="/admin/import">{tr('Impor dari Excel', 'Import from Excel')}</Link>}
           </div>
         )}
       </div>
@@ -106,8 +107,8 @@ export default function Participants() {
       <input
         className="search"
         type="search"
-        aria-label="Cari peserta"
-        placeholder="Cari nama, company, atau Unique ID"
+        aria-label={tr('Cari peserta', 'Search participants')}
+        placeholder={tr('Cari nama, company, atau Unique ID', 'Search name, company, or Unique ID')}
         value={q}
         onChange={(e) => {
           setQ(e.target.value)
@@ -115,9 +116,9 @@ export default function Participants() {
         }}
       />
 
-      <div className="letters" role="group" aria-label="Saring berdasarkan huruf awal nama">
+      <div className="letters" role="group" aria-label={tr('Saring berdasarkan huruf awal nama', 'Filter by first letter of name')}>
         <button className={`letter all ${letter === '' ? 'active' : ''}`} aria-pressed={letter === ''} onClick={() => pickLetter('')}>
-          Semua
+          {tr('Semua', 'All')}
         </button>
         {LETTERS.map((l) => (
           <button key={l} className={`letter ${letter === l ? 'active' : ''}`} aria-pressed={letter === l} onClick={() => pickLetter(l)}>
@@ -128,21 +129,26 @@ export default function Participants() {
 
       {total !== null && (
         <p className="hint">
-          {total} peserta{letter ? ` berawalan ${letter}` : ''}
-          {total > 0 ? `, menampilkan ${page * PAGE + 1}–${page * PAGE + rows.length}` : ''}
+          {tr(`${total} peserta`, `${total} participant${total === 1 ? '' : 's'}`)}
+          {letter ? tr(` berawalan ${letter}`, ` starting with ${letter}`) : ''}
+          {total > 0 ? tr(`, menampilkan ${page * PAGE + 1}–${page * PAGE + rows.length}`, `, showing ${page * PAGE + 1}–${page * PAGE + rows.length}`) : ''}
         </p>
       )}
 
       {empty ? (
         <p className="empty">
-          Belum ada data peserta.{' '}
-          {isAdmin ? 'Tambahkan peserta atau impor file Excel dari panitia untuk memulai.' : canAdd ? 'Tambahkan peserta untuk memulai.' : 'Admin perlu mengisi data peserta terlebih dulu.'}
+          {tr('Belum ada data peserta.', 'No participants yet.')}{' '}
+          {isAdmin
+            ? tr('Tambahkan peserta atau impor file Excel dari panitia untuk memulai.', 'Add participants or import the organizers’ Excel file to get started.')
+            : canAdd
+              ? tr('Tambahkan peserta untuk memulai.', 'Add participants to get started.')
+              : tr('Admin perlu mengisi data peserta terlebih dulu.', 'An admin needs to add participant data first.')}
         </p>
       ) : (
         <div className={`split ${selected ? 'has-selection' : ''}`}>
           <div className="list-col">
             {total === 0 ? (
-              <p className="empty">Tidak ada peserta yang cocok.</p>
+              <p className="empty">{tr('Tidak ada peserta yang cocok.', 'No matching participants.')}</p>
             ) : (
               <ul className="list">
                 {rows.map((r) => (
@@ -160,7 +166,7 @@ export default function Participants() {
           {selected ? (
             <ParticipantDetail key={selected} id={selected} canCancel={isAdmin} onBack={() => setSelected(null)} />
           ) : (
-            <div className="detail empty">Pilih peserta untuk melihat QR code, lokasi, dan waktu check-in.</div>
+            <div className="detail empty">{tr('Pilih peserta untuk melihat QR code, lokasi, dan waktu check-in.', 'Choose a participant to see their QR code, check-in locations, and times.')}</div>
           )}
         </div>
       )}
@@ -204,12 +210,17 @@ function AddParticipant({ onCancel, onCreated }) {
     if (result.error?.code === '23505' && ownCode) {
       const owner = await findByCode(ownCode)
       setBusy(false)
-      setError(`Unique ID ${ownCode} sudah dipakai${owner ? ` oleh ${owner.full_name}` : ' peserta lain'}. Periksa lagi Unique ID-nya.`)
+      setError(
+        tr(
+          `Unique ID ${ownCode} sudah dipakai${owner ? ` oleh ${owner.full_name}` : ' peserta lain'}. Periksa lagi Unique ID-nya.`,
+          `Unique ID ${ownCode} is already used${owner ? ` by ${owner.full_name}` : ' by another participant'}. Check the Unique ID again.`
+        )
+      )
       return
     }
     setBusy(false)
     if (result.error) {
-      setError(`Peserta gagal disimpan: ${result.error.message}`)
+      setError(tr(`Peserta gagal disimpan: ${result.error.message}`, `Could not save the participant: ${result.error.message}`))
       return
     }
     onCreated({ ...result.data, existingQr: !!ownCode })
@@ -217,10 +228,15 @@ function AddParticipant({ onCancel, onCreated }) {
 
   return (
     <form className="panel form-grid add-form" onSubmit={save}>
-      <h2>Tambah peserta</h2>
-      <p className="hint full">Isi Unique ID yang tertulis di QR code peserta. Kalau dikosongkan, Unique ID dan QR code dibuat otomatis.</p>
+      <h2>{tr('Tambah peserta', 'Add participant')}</h2>
+      <p className="hint full">
+        {tr(
+          'Isi Unique ID yang tertulis di QR code peserta. Kalau dikosongkan, Unique ID dan QR code dibuat otomatis.',
+          'Enter the Unique ID written on the participant’s QR code. If left empty, a Unique ID and QR code are created automatically.'
+        )}
+      </p>
       <label className="full">
-        Unique ID (opsional)
+        {tr('Unique ID (opsional)', 'Unique ID (optional)')}
         <input
           value={f.qr_code}
           onChange={(e) => {
@@ -230,34 +246,34 @@ function AddParticipant({ onCancel, onCreated }) {
           autoCapitalize="none"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Kosongkan untuk buat otomatis"
+          placeholder={tr('Kosongkan untuk buat otomatis', 'Leave empty to generate one')}
         />
       </label>
       <label className="full">
-        Nama lengkap (wajib)
-        <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder="Contoh: Budi Santoso" />
+        {tr('Nama lengkap (wajib)', 'Full name (required)')}
+        <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder={tr('Contoh: Budi Santoso', 'Example: Budi Santoso')} />
       </label>
       <label className="full">
         Company
-        <input value={f.organization} onChange={(e) => set('organization', e.target.value)} placeholder="Contoh: Bakamla RI" />
+        <input value={f.organization} onChange={(e) => set('organization', e.target.value)} placeholder={tr('Contoh: Bakamla RI', 'Example: Bakamla RI')} />
       </label>
       <label>
         Department
-        <input value={f.division} onChange={(e) => set('division', e.target.value)} placeholder="Contoh: Operasi Laut" />
+        <input value={f.division} onChange={(e) => set('division', e.target.value)} placeholder={tr('Contoh: Operasi Laut', 'Example: Maritime Operations')} />
       </label>
       <label>
         Job Title
-        <input value={f.job_title} onChange={(e) => set('job_title', e.target.value)} placeholder="Contoh: Kepala Seksi" />
+        <input value={f.job_title} onChange={(e) => set('job_title', e.target.value)} placeholder={tr('Contoh: Kepala Seksi', 'Example: Section Head')} />
       </label>
       <label>
-        Kategori
+        {tr('Kategori', 'Category')}
         <input list="participant-categories" value={f.category} onChange={(e) => set('category', e.target.value)} />
         <datalist id="participant-categories">
           {CATEGORIES.map((c) => <option key={c} value={c} />)}
         </datalist>
       </label>
       <label>
-        Telepon
+        {tr('Telepon', 'Phone')}
         <input type="tel" inputMode="tel" value={f.phone} onChange={(e) => set('phone', e.target.value)} placeholder="08…" />
       </label>
       <label className="full">
@@ -266,9 +282,9 @@ function AddParticipant({ onCancel, onCreated }) {
       </label>
       {error && <p className="form-error full" role="alert">{error}</p>}
       <div className="form-actions">
-        <button type="button" className="btn" onClick={onCancel}>Batal</button>
+        <button type="button" className="btn" onClick={onCancel}>{tr('Batal', 'Cancel')}</button>
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? 'Menyimpan…' : ownCode ? 'Simpan dengan Unique ID ini' : 'Simpan & buat QR'}
+          {busy ? tr('Menyimpan…', 'Saving…') : ownCode ? tr('Simpan dengan Unique ID ini', 'Save with this Unique ID') : tr('Simpan & buat QR', 'Save & create QR')}
         </button>
       </div>
     </form>
@@ -278,7 +294,9 @@ function AddParticipant({ onCancel, onCreated }) {
 function CreatedCard({ p, onAgain, onOpen, onClose }) {
   return (
     <section className="panel created" style={{ marginTop: 0, marginBottom: '1.25rem' }} role="status">
-      <p className="created-badge">✓ Peserta tersimpan, {p.existingQr ? 'memakai Unique ID yang sudah ada' : 'QR code siap'}</p>
+      <p className="created-badge">
+        ✓ {tr('Peserta tersimpan', 'Participant saved')}, {p.existingQr ? tr('memakai Unique ID yang sudah ada', 'using the existing Unique ID') : tr('QR code siap', 'QR code ready')}
+      </p>
       <QrCode code={p.qr_code} size={220} />
       <div className="created-info">
         <h2>{p.full_name}</h2>
@@ -287,11 +305,11 @@ function CreatedCard({ p, onAgain, onOpen, onClose }) {
       </div>
       <div className="created-actions">
         <button className="btn btn-primary" onClick={() => downloadQrCard({ code: p.qr_code, name: p.full_name, organization: p.organization })}>
-          Unduh kartu QR
+          {tr('Unduh kartu QR', 'Download QR card')}
         </button>
-        <button className="btn" onClick={onAgain}>+ Tambah lagi</button>
-        <button className="btn" onClick={onOpen}>Lihat detail</button>
-        <button className="btn-ghost" onClick={onClose}>Tutup</button>
+        <button className="btn" onClick={onAgain}>+ {tr('Tambah lagi', 'Add another')}</button>
+        <button className="btn" onClick={onOpen}>{tr('Lihat detail', 'View details')}</button>
+        <button className="btn-ghost" onClick={onClose}>{tr('Tutup', 'Close')}</button>
       </div>
     </section>
   )
@@ -322,9 +340,12 @@ function ParticipantDetail({ id, canCancel, onBack }) {
 
   async function cancel(c) {
     const ok = await confirm({
-      title: 'Batalkan check-in?',
-      body: `Check-in "${c.checkpoint?.name}" pada ${formatTime(c.checked_in_at)} akan dihapus.`,
-      confirmLabel: 'Batalkan check-in',
+      title: tr('Batalkan check-in?', 'Cancel this check-in?'),
+      body: tr(
+        `Check-in "${c.checkpoint?.name}" pada ${formatTime(c.checked_in_at)} akan dihapus.`,
+        `The "${c.checkpoint?.name}" check-in at ${formatTime(c.checked_in_at)} will be deleted.`
+      ),
+      confirmLabel: tr('Batalkan check-in', 'Cancel check-in'),
       danger: true,
     })
     if (!ok) return
@@ -333,35 +354,35 @@ function ParticipantDetail({ id, canCancel, onBack }) {
     load()
   }
 
-  if (!p) return <div className="detail">Memuat…</div>
+  if (!p) return <div className="detail">{tr('Memuat…', 'Loading…')}</div>
 
   const link = `${window.location.origin}/p/${p.qr_code}`
 
   return (
     <div className="detail">
-      <button className="btn-ghost detail-back" onClick={onBack}>← Kembali ke daftar</button>
+      <button className="btn-ghost detail-back" onClick={onBack}>← {tr('Kembali ke daftar', 'Back to list')}</button>
       <h2>{p.full_name}</h2>
       <dl>
         <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
         <div><dt>Department</dt><dd>{p.division || '-'}</dd></div>
         <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
-        <div><dt>Kategori</dt><dd>{p.category || '-'}</dd></div>
+        <div><dt>{tr('Kategori', 'Category')}</dt><dd>{p.category || '-'}</dd></div>
         <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
-        <div><dt>Telepon</dt><dd>{p.phone || '-'}</dd></div>
+        <div><dt>{tr('Telepon', 'Phone')}</dt><dd>{p.phone || '-'}</dd></div>
         <div><dt>Unique ID</dt><dd><code>{p.qr_code}</code></dd></div>
       </dl>
 
       <div className="detail-qr">
         <QrCode code={p.qr_code} size={140} />
         <button className="btn" onClick={() => downloadQrCard({ code: p.qr_code, name: p.full_name, organization: p.organization })}>
-          Unduh kartu QR
+          {tr('Unduh kartu QR', 'Download QR card')}
         </button>
       </div>
 
-      <h3>Riwayat check-in</h3>
+      <h3>{tr('Riwayat check-in', 'Check-in history')}</h3>
       {error && <p className="notice error">{error}</p>}
       {checkins.length === 0 ? (
-        <p className="empty">Belum pernah check-in di checkpoint mana pun.</p>
+        <p className="empty">{tr('Belum pernah check-in di checkpoint mana pun.', 'Has not checked in at any checkpoint yet.')}</p>
       ) : (
         <ol className="timeline with-icons">
           {checkins.map((c) => (
@@ -370,16 +391,16 @@ function ParticipantDetail({ id, canCancel, onBack }) {
               <time>{formatTime(c.checked_in_at)}</time>
               <div>
                 <strong>{c.checkpoint?.name}</strong>
-                <span>Petugas: {c.officer?.full_name ?? 'tidak diketahui'}</span>
+                <span>{tr('Petugas', 'Staff')}: {c.officer?.full_name ?? tr('tidak diketahui', 'unknown')}</span>
               </div>
-              {canCancel && <button className="btn-link danger" onClick={() => cancel(c)}>Batalkan</button>}
+              {canCancel && <button className="btn-link danger" onClick={() => cancel(c)}>{tr('Batalkan', 'Cancel')}</button>}
             </li>
           ))}
         </ol>
       )}
 
       <p className="hint">
-        Link riwayat untuk peserta: <a href={link} target="_blank" rel="noreferrer">{link}</a>
+        {tr('Link riwayat untuk peserta:', 'History link for the participant:')} <a href={link} target="_blank" rel="noreferrer">{link}</a>
       </p>
     </div>
   )

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js'
 import { FullMessage } from '../lib/auth.jsx'
 import { formatTime } from '../lib/format.js'
 import KindIcon from '../components/KindIcon.jsx'
+import { tr } from '../lib/i18n.jsx'
 
 // Halaman publik peserta: /p/<kode-qr>
 export default function ParticipantHistory() {
@@ -14,21 +15,28 @@ export default function ParticipantHistory() {
     supabase.rpc('participant_history', { p_code: code }).then(({ data, error }) => setData(error ? null : data))
   }, [code])
 
-  if (data === undefined) return <FullMessage title="Memuat…" />
-  if (!data) return <FullMessage title="Kode tidak ditemukan" body="Periksa kembali link Anda atau tanyakan ke meja registrasi." />
+  if (data === undefined) return <FullMessage title={tr('Memuat…', 'Loading…')} />
+  if (!data) {
+    return (
+      <FullMessage
+        title={tr('Kode tidak ditemukan', 'Code not found')}
+        body={tr('Periksa kembali link Anda atau tanyakan ke meja registrasi.', 'Check your link again or ask at the registration desk.')}
+      />
+    )
+  }
 
   const booths = data.checkins.filter((c) => c.kind === 'booth').length
 
   return (
     <div className="public">
-      <img className="public-kv" src="/msf2026-kv.jpg" alt="Maritime Security Forum 2026, Cirebon 29 sampai 30 Oktober 2026" />
+      <img className="public-kv" src="/msf2026-kv.jpg" alt={tr('Maritime Security Forum 2026, Cirebon 29 sampai 30 Oktober 2026', 'Maritime Security Forum 2026, Cirebon 29 to 30 October 2026')} />
       <div className="public-body">
-        <p className="login-event">Riwayat kunjungan peserta</p>
+        <p className="login-event">{tr('Riwayat kunjungan peserta', 'Participant visit history')}</p>
         <h1>{data.name}</h1>
         {data.organization && <p className="public-org">{data.organization}</p>}
-        <p className="public-summary"><b>{booths}</b> booth dikunjungi</p>
+        <p className="public-summary"><b>{booths}</b> {tr('booth dikunjungi', booths === 1 ? 'booth visited' : 'booths visited')}</p>
         {data.checkins.length === 0 ? (
-          <p className="empty">Belum ada check-in. Tunjukkan QR Anda di meja penukaran badge untuk memulai.</p>
+          <p className="empty">{tr('Belum ada check-in. Tunjukkan QR Anda di meja penukaran badge untuk memulai.', 'No check-ins yet. Show your QR at the badge desk to get started.')}</p>
         ) : (
           <ol className="timeline with-icons">
             {data.checkins.map((c, i) => (

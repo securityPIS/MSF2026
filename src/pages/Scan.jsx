@@ -7,6 +7,7 @@ import KindIcon from '../components/KindIcon.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { canCheckpoint } from '../lib/permissions.js'
 import { isNetworkError, useConnection, withTimeout } from '../lib/connection.js'
+import { tr } from '../lib/i18n.jsx'
 
 const STORAGE_KEY = 'msf2026.checkpoint'
 const READER_ID = 'qr-reader'
@@ -122,11 +123,11 @@ export default function Scan() {
   return (
     <div className="scan">
       <label className="cp-select">
-        <span>Checkpoint aktif</span>
+        <span>{tr('Checkpoint aktif', 'Active checkpoint')}</span>
         <span className="cp-picker">
           {current && <KindIcon kind={current.kind} size="lg" />}
           <select value={cpId} onChange={(e) => setCpId(e.target.value)}>
-            {checkpoints.length === 0 && <option value="">Belum ada checkpoint yang bisa Anda pakai</option>}
+            {checkpoints.length === 0 && <option value="">{tr('Belum ada checkpoint yang bisa Anda pakai', 'No checkpoint available to you yet')}</option>}
             {checkpoints.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -135,9 +136,11 @@ export default function Scan() {
       </label>
 
       {online ? (
-        <p className="conn on">Terhubung ke server</p>
+        <p className="conn on">{tr('Terhubung ke server', 'Connected to server')}</p>
       ) : (
-        <p className="conn off" role="alert">Tidak ada internet. Scan tidak akan tercatat sampai koneksi kembali.</p>
+        <p className="conn off" role="alert">
+          {tr('Tidak ada internet. Scan tidak akan tercatat sampai koneksi kembali.', 'No internet. Scans will not be recorded until the connection is back.')}
+        </p>
       )}
 
       <div className="viewfinder">
@@ -147,10 +150,10 @@ export default function Scan() {
             <p>{camError}</p>
           </div>
         )}
-        {busy && <div className="busy">Memeriksa…</div>}
+        {busy && <div className="busy">{tr('Memeriksa…', 'Checking…')}</div>}
       </div>
 
-      <p className="scan-count">{okCount} check-in berhasil sejak halaman ini dibuka</p>
+      <p className="scan-count">{tr(`${okCount} check-in berhasil sejak halaman ini dibuka`, `${okCount} successful check-in${okCount === 1 ? '' : 's'} since this page was opened`)}</p>
 
       {result && <ResultOverlay result={result} checkpoint={current} onClose={dismiss} />}
     </div>
@@ -159,24 +162,24 @@ export default function Scan() {
 
 function describeCameraError(err) {
   const msg = String(err?.message || err)
-  if (!window.isSecureContext) return 'Kamera hanya bisa dipakai lewat HTTPS. Buka aplikasi dengan alamat https://.'
-  if (/NotAllowed|Permission/i.test(msg)) return 'Izin kamera ditolak. Izinkan akses kamera di pengaturan browser, lalu muat ulang halaman.'
-  if (/NotFound|Requested device not found/i.test(msg)) return 'Kamera tidak ditemukan di perangkat ini. Pakai perangkat yang punya kamera.'
-  if (/NotReadable|in use/i.test(msg)) return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi tersebut, lalu muat ulang halaman.'
-  return `Kamera tidak bisa dibuka: ${msg}`
+  if (!window.isSecureContext) return tr('Kamera hanya bisa dipakai lewat HTTPS. Buka aplikasi dengan alamat https://.', 'The camera only works over HTTPS. Open the app with an https:// address.')
+  if (/NotAllowed|Permission/i.test(msg)) return tr('Izin kamera ditolak. Izinkan akses kamera di pengaturan browser, lalu muat ulang halaman.', 'Camera permission denied. Allow camera access in the browser settings, then reload the page.')
+  if (/NotFound|Requested device not found/i.test(msg)) return tr('Kamera tidak ditemukan di perangkat ini. Pakai perangkat yang punya kamera.', 'No camera found on this device. Use a device with a camera.')
+  if (/NotReadable|in use/i.test(msg)) return tr('Kamera sedang dipakai aplikasi lain. Tutup aplikasi tersebut, lalu muat ulang halaman.', 'The camera is in use by another app. Close that app, then reload the page.')
+  return tr(`Kamera tidak bisa dibuka: ${msg}`, `The camera could not be opened: ${msg}`)
 }
 
 const RESULT_COPY = {
-  ok: { tone: 'go', title: 'Check-in berhasil' },
-  duplicate: { tone: 'hold', title: 'Sudah check-in' },
-  no_badge: { tone: 'stop', title: 'Belum tukar badge' },
-  not_found: { tone: 'stop', title: 'QR tidak terdaftar' },
-  inactive: { tone: 'stop', title: 'Checkpoint nonaktif' },
-  invalid_checkpoint: { tone: 'stop', title: 'Checkpoint tidak ditemukan' },
-  forbidden: { tone: 'stop', title: 'Tidak punya akses' },
-  offline: { tone: 'stop', title: 'Tidak ada internet' },
-  timeout: { tone: 'stop', title: 'Server tidak merespons' },
-  error: { tone: 'stop', title: 'Gagal terhubung ke server' },
+  ok: { tone: 'go', get title() { return tr('Check-in berhasil', 'Check-in successful') } },
+  duplicate: { tone: 'hold', get title() { return tr('Sudah check-in', 'Already checked in') } },
+  no_badge: { tone: 'stop', get title() { return tr('Belum tukar badge', 'Badge not collected') } },
+  not_found: { tone: 'stop', get title() { return tr('QR tidak terdaftar', 'QR not registered') } },
+  inactive: { tone: 'stop', get title() { return tr('Checkpoint nonaktif', 'Checkpoint inactive') } },
+  invalid_checkpoint: { tone: 'stop', get title() { return tr('Checkpoint tidak ditemukan', 'Checkpoint not found') } },
+  forbidden: { tone: 'stop', get title() { return tr('Tidak punya akses', 'No access') } },
+  offline: { tone: 'stop', get title() { return tr('Tidak ada internet', 'No internet') } },
+  timeout: { tone: 'stop', get title() { return tr('Server tidak merespons', 'Server not responding') } },
+  error: { tone: 'stop', get title() { return tr('Gagal terhubung ke server', 'Could not reach the server') } },
 }
 
 function ResultOverlay({ result, checkpoint, onClose }) {
@@ -184,15 +187,15 @@ function ResultOverlay({ result, checkpoint, onClose }) {
   const p = result.participant
 
   let detail = ''
-  if (result.status === 'duplicate') detail = `Sudah tercatat ${formatTime(result.previous_at)}.`
-  else if (result.status === 'no_badge') detail = 'Arahkan peserta ke meja penukaran badge terlebih dulu.'
-  else if (result.status === 'not_found') detail = `Kode "${result.code}" tidak ada di data peserta. Arahkan ke meja registrasi.`
-  else if (result.status === 'inactive') detail = 'Pilih checkpoint lain atau minta admin mengaktifkannya.'
-  else if (result.status === 'invalid_checkpoint') detail = 'Muat ulang halaman lalu pilih checkpoint lagi.'
-  else if (result.status === 'forbidden') detail = 'Role Anda tidak diizinkan scan di checkpoint ini. Hubungi admin.'
-  else if (result.status === 'offline') detail = 'Scan belum tercatat. Periksa Wi-Fi atau data seluler, lalu scan ulang.'
-  else if (result.status === 'timeout') detail = 'Status check-in belum pasti. Scan ulang: kalau ternyata sudah tercatat, hasilnya "Sudah check-in".'
-  else if (result.status === 'error') detail = `${result.message}. Periksa koneksi internet, lalu scan ulang.`
+  if (result.status === 'duplicate') detail = tr(`Sudah tercatat ${formatTime(result.previous_at)}.`, `Already recorded ${formatTime(result.previous_at)}.`)
+  else if (result.status === 'no_badge') detail = tr('Arahkan peserta ke meja penukaran badge terlebih dulu.', 'Send the participant to the badge desk first.')
+  else if (result.status === 'not_found') detail = tr(`Kode "${result.code}" tidak ada di data peserta. Arahkan ke meja registrasi.`, `Code "${result.code}" is not in the participant list. Send them to the registration desk.`)
+  else if (result.status === 'inactive') detail = tr('Pilih checkpoint lain atau minta admin mengaktifkannya.', 'Choose another checkpoint or ask an admin to activate it.')
+  else if (result.status === 'invalid_checkpoint') detail = tr('Muat ulang halaman lalu pilih checkpoint lagi.', 'Reload the page and choose the checkpoint again.')
+  else if (result.status === 'forbidden') detail = tr('Role Anda tidak diizinkan scan di checkpoint ini. Hubungi admin.', 'Your role may not scan at this checkpoint. Contact an admin.')
+  else if (result.status === 'offline') detail = tr('Scan belum tercatat. Periksa Wi-Fi atau data seluler, lalu scan ulang.', 'The scan was not recorded. Check Wi-Fi or mobile data, then scan again.')
+  else if (result.status === 'timeout') detail = tr('Status check-in belum pasti. Scan ulang: kalau ternyata sudah tercatat, hasilnya "Sudah check-in".', 'The check-in status is uncertain. Scan again: if it was already recorded, the result is "Already checked in".')
+  else if (result.status === 'error') detail = tr(`${result.message}. Periksa koneksi internet, lalu scan ulang.`, `${result.message}. Check the internet connection, then scan again.`)
 
   return (
     <div className={`overlay tone-${copy.tone}`} role="alertdialog" aria-live="assertive">

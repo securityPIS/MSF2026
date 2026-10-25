@@ -3,12 +3,13 @@ import { supabase } from '../../lib/supabase.js'
 import { MENUS, MENU_LABEL } from '../../lib/permissions.js'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import KindIcon from '../../components/KindIcon.jsx'
+import { tr } from '../../lib/i18n.jsx'
 
 const EMPTY = { name: '', menus: ['scan'], can_add_participants: false, all_checkpoints: true, checkpoint_ids: [] }
 const MENU_HINT = {
-  scan: 'Scan QR di checkpoint yang ditangani',
-  dashboard: 'Statistik, check-in terbaru, dan laporan untuk checkpoint yang ditangani',
-  participants: 'Cari peserta dan riwayat check-in',
+  get scan() { return tr('Scan QR di checkpoint yang ditangani', 'Scan QR codes at assigned checkpoints') },
+  get dashboard() { return tr('Statistik, check-in terbaru, dan laporan untuk checkpoint yang ditangani', 'Stats, latest check-ins, and reports for assigned checkpoints') },
+  get participants() { return tr('Cari peserta dan riwayat check-in', 'Search participants and their check-in history') },
 }
 
 // Daftar role akses + form tambah/ubah. Dipakai di halaman Petugas (tab "Role akses").
@@ -54,9 +55,14 @@ export default function RolesPanel({ onChanged }) {
     const { error } = r.id
       ? await supabase.from('roles').update(payload).eq('id', r.id)
       : await supabase.from('roles').insert(payload)
-    if (error) return error.code === '23505' ? 'Nama role sudah dipakai.' : error.message
+    if (error) return error.code === '23505' ? tr('Nama role sudah dipakai.', 'That role name is already taken.') : error.message
     setEditing(null)
-    setNotice({ type: 'ok', text: r.id ? `Role ${payload.name} diperbarui.` : `Role ${payload.name} dibuat. Pasang ke akun lewat tab Akun.` })
+    setNotice({
+      type: 'ok',
+      text: r.id
+        ? tr(`Role ${payload.name} diperbarui.`, `Role ${payload.name} updated.`)
+        : tr(`Role ${payload.name} dibuat. Pasang ke akun lewat tab Akun.`, `Role ${payload.name} created. Assign it to accounts in the Accounts tab.`),
+    })
     load()
     onChanged?.()
     return null
@@ -64,17 +70,22 @@ export default function RolesPanel({ onChanged }) {
 
   async function remove(r) {
     const ok = await confirm({
-      title: `Hapus role ${r.name}?`,
-      body: 'Role ini tidak dipakai akun mana pun, jadi aman dihapus.',
-      confirmLabel: 'Hapus role',
+      title: tr(`Hapus role ${r.name}?`, `Delete role ${r.name}?`),
+      body: tr('Role ini tidak dipakai akun mana pun, jadi aman dihapus.', 'No account uses this role, so it is safe to delete.'),
+      confirmLabel: tr('Hapus role', 'Delete role'),
       danger: true,
     })
     if (!ok) return
     const { error } = await supabase.from('roles').delete().eq('id', r.id)
     setNotice(
       error
-        ? { type: 'error', text: error.code === '23503' ? 'Role masih dipakai akun. Ganti role akun tersebut dulu.' : error.message }
-        : { type: 'ok', text: `Role ${r.name} dihapus.` }
+        ? {
+            type: 'error',
+            text: error.code === '23503'
+              ? tr('Role masih dipakai akun. Ganti role akun tersebut dulu.', 'The role is still used by an account. Change that account’s role first.')
+              : error.message,
+          }
+        : { type: 'ok', text: tr(`Role ${r.name} dihapus.`, `Role ${r.name} deleted.`) }
     )
     load()
     onChanged?.()
@@ -89,15 +100,23 @@ export default function RolesPanel({ onChanged }) {
   return (
     <>
       <div className="actions" style={{ marginBottom: '1rem' }}>
-        <button className="btn btn-primary btn-block" onClick={() => startEdit({ ...EMPTY })}>+ Tambah role</button>
+        <button className="btn btn-primary btn-block" onClick={() => startEdit({ ...EMPTY })}>+ {tr('Tambah role', 'Add role')}</button>
       </div>
       {notice && <p className={`notice ${notice.type}`} role="status">{notice.text}</p>}
       <p className="hint">
-        Role mengatur menu dan checkpoint yang boleh dipakai akun petugas. Admin selalu punya akses penuh, dan petugas
-        tanpa role khusus memakai <b>Petugas (akses penuh)</b>.
+        {tr(
+          'Role mengatur menu dan checkpoint yang boleh dipakai akun petugas. Admin selalu punya akses penuh, dan petugas tanpa role khusus memakai ',
+          'A role sets which menus and checkpoints a staff account may use. Admins always have full access, and staff without a custom role use '
+        )}
+        <b>{tr('Petugas (akses penuh)', 'Staff (full access)')}</b>.
       </p>
       {roles.length === 0 ? (
-        <p className="empty">Belum ada role khusus. Contoh: role "Petugas Booth" yang hanya bisa scan di booth tertentu.</p>
+        <p className="empty">
+          {tr(
+            'Belum ada role khusus. Contoh: role "Petugas Booth" yang hanya bisa scan di booth tertentu.',
+            'No custom roles yet. Example: a "Booth Staff" role that can only scan at certain booths.'
+          )}
+        </p>
       ) : (
         <ul className="cards cols">
           {roles.map((r) => {
@@ -107,23 +126,23 @@ export default function RolesPanel({ onChanged }) {
                 <div className="card-head">
                   <div>
                     <h3 className="card-title">{r.name}</h3>
-                    <p className="card-sub">{used ? `Dipakai ${used} akun` : 'Belum dipakai akun'}</p>
+                    <p className="card-sub">{used ? tr(`Dipakai ${used} akun`, `Used by ${used} account${used === 1 ? '' : 's'}`) : tr('Belum dipakai akun', 'Not used by any account')}</p>
                   </div>
                 </div>
                 <div className="perm-block">
                   <span className="perm-label">Menu</span>
                   <div className="chips">
                     {r.menus.map((m) => <span key={m} className="chip cyan">{MENU_LABEL[m]}</span>)}
-                    {r.can_add_participants && <span className="chip">+ Tambah peserta</span>}
+                    {r.can_add_participants && <span className="chip">+ {tr('Tambah peserta', 'Add participants')}</span>}
                   </div>
                 </div>
                 <div className="perm-block">
-                  <span className="perm-label">Checkpoint yang ditangani</span>
+                  <span className="perm-label">{tr('Checkpoint yang ditangani', 'Assigned checkpoints')}</span>
                   <div className="chips">
                     {r.all_checkpoints ? (
-                      <span className="chip">Semua checkpoint</span>
+                      <span className="chip">{tr('Semua checkpoint', 'All checkpoints')}</span>
                     ) : r.checkpoint_ids.length === 0 ? (
-                      <span className="chip off">Belum dipilih</span>
+                      <span className="chip off">{tr('Belum dipilih', 'None selected')}</span>
                     ) : (
                       r.checkpoint_ids.map((id) => {
                         const c = cpName(id)
@@ -135,14 +154,14 @@ export default function RolesPanel({ onChanged }) {
                   </div>
                 </div>
                 <div className="card-actions">
-                  <button className="btn" onClick={() => startEdit(r)}>Ubah</button>
+                  <button className="btn" onClick={() => startEdit(r)}>{tr('Ubah', 'Edit')}</button>
                   <button
                     className="btn btn-danger"
                     disabled={used > 0}
-                    title={used > 0 ? 'Ganti role akun yang memakainya dulu' : undefined}
+                    title={used > 0 ? tr('Ganti role akun yang memakainya dulu', 'Change the role of the accounts using it first') : undefined}
                     onClick={() => remove(r)}
                   >
-                    Hapus
+                    {tr('Hapus', 'Delete')}
                   </button>
                 </div>
               </li>
@@ -163,9 +182,9 @@ function RoleForm({ value, checkpoints, onSave, onCancel }) {
 
   async function submit(e) {
     e.preventDefault()
-    if (f.menus.length === 0) return setError('Pilih minimal satu menu.')
+    if (f.menus.length === 0) return setError(tr('Pilih minimal satu menu.', 'Choose at least one menu.'))
     if (!f.all_checkpoints && f.checkpoint_ids.length === 0) {
-      return setError('Pilih minimal satu checkpoint, atau izinkan semua checkpoint.')
+      return setError(tr('Pilih minimal satu checkpoint, atau izinkan semua checkpoint.', 'Choose at least one checkpoint, or allow all checkpoints.'))
     }
     setBusy(true)
     setError('')
@@ -178,14 +197,14 @@ function RoleForm({ value, checkpoints, onSave, onCancel }) {
 
   return (
     <form className="panel form-grid" onSubmit={submit}>
-      <h2>{value.id ? `Ubah role ${value.name}` : 'Tambah role'}</h2>
+      <h2>{value.id ? tr(`Ubah role ${value.name}`, `Edit role ${value.name}`) : tr('Tambah role', 'Add role')}</h2>
       <label className="full">
-        Nama role
-        <input required autoFocus value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Contoh: Petugas Booth, Panitia Lunch" />
+        {tr('Nama role', 'Role name')}
+        <input required autoFocus value={f.name} onChange={(e) => set('name', e.target.value)} placeholder={tr('Contoh: Petugas Booth, Panitia Lunch', 'Example: Booth Staff, Lunch Crew')} />
       </label>
 
       <fieldset className="check-group full">
-        <legend>Menu yang bisa dibuka</legend>
+        <legend>{tr('Menu yang bisa dibuka', 'Menus it can open')}</legend>
         {MENUS.map((m) => (
           <label key={m.key} className="check-card">
             <input type="checkbox" checked={f.menus.includes(m.key)} onChange={() => toggle('menus', m.key)} />
@@ -203,24 +222,27 @@ function RoleForm({ value, checkpoints, onSave, onCancel }) {
             onChange={(e) => set('can_add_participants', e.target.checked)}
           />
           <span>
-            <b>Boleh tambah peserta</b>
-            <small>{participants ? 'Tombol + Tambah peserta di menu Peserta' : 'Aktifkan menu Peserta dulu'}</small>
+            <b>{tr('Boleh tambah peserta', 'May add participants')}</b>
+            <small>{participants ? tr('Tombol + Tambah peserta di menu Peserta', 'The + Add participant button in the Participants menu') : tr('Aktifkan menu Peserta dulu', 'Enable the Participants menu first')}</small>
           </span>
         </label>
       </fieldset>
 
       {f.menus.length > 0 && (
         <fieldset className="check-group full">
-          <legend>Checkpoint yang ditangani</legend>
+          <legend>{tr('Checkpoint yang ditangani', 'Assigned checkpoints')}</legend>
           <p className="hint" style={{ margin: '0 0 0.25rem' }}>
-            Berlaku untuk scan, data di dashboard, laporan Excel, dan riwayat check-in peserta.
+            {tr(
+              'Berlaku untuk scan, data di dashboard, laporan Excel, dan riwayat check-in peserta.',
+              'Applies to scanning, dashboard data, the Excel report, and participant check-in history.'
+            )}
           </p>
           <div className="segmented">
             <button type="button" className={f.all_checkpoints ? 'active' : ''} aria-pressed={f.all_checkpoints} onClick={() => set('all_checkpoints', true)}>
-              Semua checkpoint
+              {tr('Semua checkpoint', 'All checkpoints')}
             </button>
             <button type="button" className={!f.all_checkpoints ? 'active' : ''} aria-pressed={!f.all_checkpoints} onClick={() => set('all_checkpoints', false)}>
-              Pilih tertentu
+              {tr('Pilih tertentu', 'Choose specific')}
             </button>
           </div>
           {!f.all_checkpoints &&
@@ -238,8 +260,10 @@ function RoleForm({ value, checkpoints, onSave, onCancel }) {
 
       {error && <p className="form-error full" role="alert">{error}</p>}
       <div className="form-actions">
-        <button type="button" className="btn" onClick={onCancel}>Batal</button>
-        <button className="btn btn-primary" disabled={busy}>{busy ? 'Menyimpan…' : value.id ? 'Simpan role' : 'Buat role'}</button>
+        <button type="button" className="btn" onClick={onCancel}>{tr('Batal', 'Cancel')}</button>
+        <button className="btn btn-primary" disabled={busy}>
+          {busy ? tr('Menyimpan…', 'Saving…') : value.id ? tr('Simpan role', 'Save role') : tr('Buat role', 'Create role')}
+        </button>
       </div>
     </form>
   )

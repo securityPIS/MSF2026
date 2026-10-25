@@ -1,12 +1,16 @@
 // Izin akses di sisi tampilan. Aturan yang sama dijaga di database (has_menu, can_use_checkpoint,
 // can_add_participants di schema.sql). Admin boleh semua; petugas tanpa role boleh semua menu petugas.
+import { tr } from './i18n.jsx'
+
 export const MENUS = [
   { key: 'scan', label: 'Scan', path: '/scan' },
   { key: 'dashboard', label: 'Dashboard', path: '/admin' },
-  { key: 'participants', label: 'Peserta', path: '/admin/participants' },
+  { key: 'participants', get label() { return tr('Peserta', 'Participants') }, path: '/admin/participants' },
 ]
 
-export const MENU_LABEL = Object.fromEntries(MENUS.map((m) => [m.key, m.label]))
+export const MENU_LABEL = Object.defineProperties({}, Object.fromEntries(
+  MENUS.map((m) => [m.key, { enumerable: true, get: () => m.label }])
+))
 
 const isAdmin = (p) => p?.role === 'admin'
 const isOfficer = (p) => p?.role === 'officer'

@@ -4,13 +4,18 @@ import { useAuth } from '../../lib/auth.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import RolesPanel from './Roles.jsx'
 import { MENU_LABEL } from '../../lib/permissions.js'
+import { tr } from '../../lib/i18n.jsx'
 
-const ROLE_LABEL = { officer: 'Petugas', admin: 'Admin', inactive: 'Nonaktif' }
+const ROLE_LABEL = {
+  get officer() { return tr('Petugas', 'Staff') },
+  admin: 'Admin',
+  get inactive() { return tr('Nonaktif', 'Inactive') },
+}
 const EMPTY = { full_name: '', email: '', password: '', role: 'officer', role_id: null }
 
 // Label akses yang tampil di kartu akun
 function accessLabel(p) {
-  if (p.role === 'officer') return p.perm?.name ?? 'Petugas (akses penuh)'
+  if (p.role === 'officer') return p.perm?.name ?? tr('Petugas (akses penuh)', 'Staff (full access)')
   return ROLE_LABEL[p.role]
 }
 
@@ -57,21 +62,29 @@ export default function Staff() {
     const { error } = await manageStaff({ action: f.id ? 'update' : 'create', ...f })
     if (error) return error
     setEditing(null)
-    setNotice({ type: 'ok', text: f.id ? `Akun ${f.full_name} diperbarui.` : `Akun ${f.full_name} dibuat. Bagikan email dan kata sandinya ke yang bersangkutan.` })
+    setNotice({
+      type: 'ok',
+      text: f.id
+        ? tr(`Akun ${f.full_name} diperbarui.`, `Account ${f.full_name} updated.`)
+        : tr(`Akun ${f.full_name} dibuat. Bagikan email dan kata sandinya ke yang bersangkutan.`, `Account ${f.full_name} created. Share the email and password with them.`),
+    })
     load()
     return null
   }
 
   async function remove(p) {
     const ok = await confirm({
-      title: `Hapus akun ${p.full_name}?`,
-      body: 'Akun tidak bisa dipakai masuk lagi. Riwayat check-in yang pernah dibuatnya tetap tersimpan. Untuk menonaktifkan sementara, ubah perannya menjadi Nonaktif.',
-      confirmLabel: 'Hapus akun',
+      title: tr(`Hapus akun ${p.full_name}?`, `Delete account ${p.full_name}?`),
+      body: tr(
+        'Akun tidak bisa dipakai masuk lagi. Riwayat check-in yang pernah dibuatnya tetap tersimpan. Untuk menonaktifkan sementara, ubah perannya menjadi Nonaktif.',
+        'The account can no longer sign in. Check-ins it recorded are kept. To disable it temporarily, change its role to Inactive.'
+      ),
+      confirmLabel: tr('Hapus akun', 'Delete account'),
       danger: true,
     })
     if (!ok) return
     const { error } = await manageStaff({ action: 'delete', id: p.id })
-    setNotice(error ? { type: 'error', text: error } : { type: 'ok', text: `Akun ${p.full_name} dihapus.` })
+    setNotice(error ? { type: 'error', text: error } : { type: 'ok', text: tr(`Akun ${p.full_name} dihapus.`, `Account ${p.full_name} deleted.`) })
     load()
   }
 
@@ -79,18 +92,18 @@ export default function Staff() {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Pengaturan</p>
-          <h1>Petugas &amp; admin</h1>
+          <p className="eyebrow">{tr('Pengaturan', 'Settings')}</p>
+          <h1>{tr('Petugas & admin', 'Staff & admins')}</h1>
         </div>
       </div>
 
       {!editing && (
         <div className="segmented tabs-top" role="tablist">
           <button role="tab" aria-selected={tab === 'accounts'} className={tab === 'accounts' ? 'active' : ''} onClick={() => setTab('accounts')}>
-            Akun ({list.length})
+            {tr('Akun', 'Accounts')} ({list.length})
           </button>
           <button role="tab" aria-selected={tab === 'roles'} className={tab === 'roles' ? 'active' : ''} onClick={() => { setNotice(null); setTab('roles') }}>
-            Role akses ({roles.length})
+            {tr('Role akses', 'Access roles')} ({roles.length})
           </button>
         </div>
       )}
@@ -102,7 +115,7 @@ export default function Staff() {
       ) : (
         <>
           <div className="actions" style={{ marginBottom: '1rem' }}>
-            <button className="btn btn-primary btn-block" onClick={() => startEdit({ ...EMPTY })}>+ Tambah petugas</button>
+            <button className="btn btn-primary btn-block" onClick={() => startEdit({ ...EMPTY })}>+ {tr('Tambah petugas', 'Add staff')}</button>
           </div>
           {notice && <p className={`notice ${notice.type}`} role="status">{notice.text}</p>}
           <ul className="cards cols">
@@ -118,13 +131,13 @@ export default function Staff() {
                       <p className="card-sub">{p.email}</p>
                       <div className="chips">
                         <span className={`chip role-chip ${roleClass}`}>{accessLabel(p)}</span>
-                        {self && <span className="chip cyan">Anda</span>}
+                        {self && <span className="chip cyan">{tr('Anda', 'You')}</span>}
                       </div>
                     </div>
                   </div>
                   <div className="card-actions">
-                    <button className="btn" onClick={() => startEdit(p)}>Ubah</button>
-                    {!self && <button className="btn btn-danger" onClick={() => remove(p)}>Hapus</button>}
+                    <button className="btn" onClick={() => startEdit(p)}>{tr('Ubah', 'Edit')}</button>
+                    {!self && <button className="btn btn-danger" onClick={() => remove(p)}>{tr('Hapus', 'Delete')}</button>}
                   </div>
                 </li>
               )
@@ -156,29 +169,32 @@ function StaffForm({ value, roles, isSelf, onSave, onCancel }) {
 
   // Pilihan akses: admin, petugas akses penuh, role buatan admin, nonaktif
   const options = [
-    { key: 'admin', role: 'admin', role_id: null, label: 'Admin', hint: 'Semua menu termasuk pengaturan', cls: 'role-admin' },
-    { key: 'officer', role: 'officer', role_id: null, label: 'Petugas (akses penuh)', hint: 'Scan semua checkpoint, dashboard, peserta', cls: 'role-officer' },
+    { key: 'admin', role: 'admin', role_id: null, label: 'Admin', hint: tr('Semua menu termasuk pengaturan', 'All menus including settings'), cls: 'role-admin' },
+    {
+      key: 'officer', role: 'officer', role_id: null, label: tr('Petugas (akses penuh)', 'Staff (full access)'),
+      hint: tr('Scan semua checkpoint, dashboard, peserta', 'Scan at every checkpoint, dashboard, participants'), cls: 'role-officer',
+    },
     ...roles.map((r) => ({
       key: `role:${r.id}`, role: 'officer', role_id: r.id, label: r.name,
       hint: r.menus.map((m) => MENU_LABEL[m]).join(', '), cls: 'role-custom',
     })),
-    { key: 'inactive', role: 'inactive', role_id: null, label: 'Nonaktif', hint: 'Tidak bisa masuk aplikasi', cls: 'role-inactive' },
+    { key: 'inactive', role: 'inactive', role_id: null, label: tr('Nonaktif', 'Inactive'), hint: tr('Tidak bisa masuk aplikasi', 'Cannot sign in'), cls: 'role-inactive' },
   ]
   const selected = f.role === 'officer' && f.role_id ? `role:${f.role_id}` : f.role
 
   return (
     <form className="panel form-grid" onSubmit={submit}>
-      <h2>{isNew ? 'Tambah petugas' : `Ubah akun ${value.full_name}`}</h2>
+      <h2>{isNew ? tr('Tambah petugas', 'Add staff') : tr(`Ubah akun ${value.full_name}`, `Edit account ${value.full_name}`)}</h2>
       <label className="full">
-        Nama lengkap
-        <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder="Contoh: Rina Anggraini" />
+        {tr('Nama lengkap', 'Full name')}
+        <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} placeholder={tr('Contoh: Rina Anggraini', 'Example: Rina Anggraini')} />
       </label>
       <label className="full">
-        Email (dipakai untuk masuk)
+        {tr('Email (dipakai untuk masuk)', 'Email (used to sign in)')}
         <input required type="email" inputMode="email" autoCapitalize="none" autoComplete="off" value={f.email} onChange={(e) => set('email', e.target.value)} />
       </label>
       <label className="full">
-        {isNew ? 'Kata sandi awal' : 'Kata sandi baru'}
+        {isNew ? tr('Kata sandi awal', 'Initial password') : tr('Kata sandi baru', 'New password')}
         <input
           type="password"
           required={isNew}
@@ -186,11 +202,11 @@ function StaffForm({ value, roles, isSelf, onSave, onCancel }) {
           autoComplete="new-password"
           value={f.password}
           onChange={(e) => set('password', e.target.value)}
-          placeholder={isNew ? 'Minimal 8 karakter' : 'Kosongkan jika tidak diganti'}
+          placeholder={isNew ? tr('Minimal 8 karakter', 'At least 8 characters') : tr('Kosongkan jika tidak diganti', 'Leave empty to keep the current one')}
         />
       </label>
       <fieldset className="role-picker full" disabled={isSelf}>
-        <legend>Peran &amp; akses{isSelf ? ' (tidak bisa mengubah peran sendiri)' : ''}</legend>
+        <legend>{tr('Peran & akses', 'Role & access')}{isSelf ? tr(' (tidak bisa mengubah peran sendiri)', ' (you cannot change your own role)') : ''}</legend>
         {options.map((o) => (
           <label key={o.key} className={`role-option ${o.cls}`}>
             <input
@@ -209,8 +225,10 @@ function StaffForm({ value, roles, isSelf, onSave, onCancel }) {
       </fieldset>
       {error && <p className="form-error full" role="alert">{error}</p>}
       <div className="form-actions">
-        <button type="button" className="btn" onClick={onCancel}>Batal</button>
-        <button className="btn btn-primary" disabled={busy}>{busy ? 'Menyimpan…' : isNew ? 'Buat akun' : 'Simpan perubahan'}</button>
+        <button type="button" className="btn" onClick={onCancel}>{tr('Batal', 'Cancel')}</button>
+        <button className="btn btn-primary" disabled={busy}>
+          {busy ? tr('Menyimpan…', 'Saving…') : isNew ? tr('Buat akun', 'Create account') : tr('Simpan perubahan', 'Save changes')}
+        </button>
       </div>
     </form>
   )

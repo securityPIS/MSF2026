@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { tr } from '../lib/i18n.jsx'
 
 // Pengganti window.confirm(): dialog bawaan browser diblokir diam-diam di sebagian WebView dan
 // browser dalam aplikasi, sehingga tombol Hapus tampak tidak berfungsi.
@@ -35,7 +36,7 @@ export function useConfirm() {
   return useContext(ConfirmContext)
 }
 
-function Dialog({ title, body, confirmLabel = 'Ya, lanjutkan', danger = false, onAnswer }) {
+function Dialog({ title, body, confirmLabel = tr('Ya, lanjutkan', 'Yes, continue'), danger = false, onAnswer }) {
   const okRef = useRef(null)
   useEffect(() => {
     okRef.current?.focus()
@@ -50,7 +51,7 @@ function Dialog({ title, body, confirmLabel = 'Ya, lanjutkan', danger = false, o
         <h2 id="dialog-title">{title}</h2>
         {body && <p>{body}</p>}
         <div className="dialog-actions">
-          <button className="btn" onClick={() => onAnswer(false)}>Batal</button>
+          <button className="btn" onClick={() => onAnswer(false)}>{tr('Batal', 'Cancel')}</button>
           <button ref={okRef} className={`btn ${danger ? 'btn-danger-solid' : 'btn-primary'}`} onClick={() => onAnswer(true)}>
             {confirmLabel}
           </button>

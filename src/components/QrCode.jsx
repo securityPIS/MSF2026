@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import { tr } from '../lib/i18n.jsx'
 
 const QR_OPTS = { errorCorrectionLevel: 'M', margin: 1, color: { dark: '#03103a', light: '#ffffff' } }
 
@@ -43,7 +44,7 @@ export async function downloadQrCard({ code, name, organization }) {
   ctx.fillText('MARITIME SECURITY FORUM 2026', W / 2, 70)
   ctx.fillStyle = '#a8c0ec'
   ctx.font = font(500, 20)
-  ctx.fillText('Cirebon, 29–30 Oktober 2026', W / 2, 102)
+  ctx.fillText(tr('Cirebon, 29–30 Oktober 2026', 'Cirebon, 29–30 October 2026'), W / 2, 102)
 
   const qrSize = 500
   const qrX = (W - qrSize) / 2

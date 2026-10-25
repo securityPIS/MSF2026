@@ -1,20 +1,23 @@
+import { locale, tr } from './i18n.jsx'
+
+// Getter: label dibaca ulang setiap kali dipakai, jadi ikut bahasa yang aktif
 export const KIND_LABEL = {
   badge: 'Badge',
   booth: 'Booth',
   lunch: 'Lunch',
   souvenir: 'Souvenir',
-  custom: 'Lainnya',
+  get custom() { return tr('Lainnya', 'Other') },
 }
 
 export const REPEAT_LABEL = {
-  once: 'Sekali per peserta',
-  daily: 'Sekali per hari',
-  unlimited: 'Tanpa batas',
+  get once() { return tr('Sekali per peserta', 'Once per participant') },
+  get daily() { return tr('Sekali per hari', 'Once per day') },
+  get unlimited() { return tr('Tanpa batas', 'Unlimited') },
 }
 
 export function formatTime(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleString('id-ID', {
+  return new Date(iso).toLocaleString(locale(), {
     timeZone: 'Asia/Jakarta',
     day: 'numeric',
     month: 'short',

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase.js'
 import { KIND_LABEL, REPEAT_LABEL } from '../../lib/format.js'
 import KindIcon from '../../components/KindIcon.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
+import { tr } from '../../lib/i18n.jsx'
 
 const EMPTY = { name: '', kind: 'booth', repeat_rule: 'once', requires_badge: true, is_active: true, sort_order: 100 }
 const KIND_DEFAULTS = {
@@ -42,7 +43,7 @@ export default function Checkpoints() {
       ? await supabase.from('checkpoints').update(payload).eq('id', cp.id)
       : await supabase.from('checkpoints').insert(payload)
     if (error) {
-      setError(error.code === '23505' ? 'Hanya boleh ada satu checkpoint bertipe Badge.' : error.message)
+      setError(error.code === '23505' ? tr('Hanya boleh ada satu checkpoint bertipe Badge.', 'There can be only one checkpoint of type Badge.') : error.message)
       return
     }
     setEditing(null)
@@ -63,9 +64,12 @@ export default function Checkpoints() {
 
   async function remove(cp) {
     const ok = await confirm({
-      title: `Hapus "${cp.name}"?`,
-      body: 'Semua riwayat check-in di checkpoint ini ikut terhapus. Untuk menutup sementara, gunakan Nonaktifkan.',
-      confirmLabel: 'Hapus checkpoint',
+      title: tr(`Hapus "${cp.name}"?`, `Delete "${cp.name}"?`),
+      body: tr(
+        'Semua riwayat check-in di checkpoint ini ikut terhapus. Untuk menutup sementara, gunakan Nonaktifkan.',
+        'All check-in history at this checkpoint is deleted too. To close it temporarily, use Deactivate.'
+      ),
+      confirmLabel: tr('Hapus checkpoint', 'Delete checkpoint'),
       danger: true,
     })
     if (!ok) return
@@ -78,12 +82,12 @@ export default function Checkpoints() {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Pengaturan</p>
+          <p className="eyebrow">{tr('Pengaturan', 'Settings')}</p>
           <h1>Checkpoint</h1>
         </div>
         {!editing && (
           <div className="actions">
-            <button className="btn btn-primary" onClick={() => startEdit({ ...EMPTY })}>Tambah checkpoint</button>
+            <button className="btn btn-primary" onClick={() => startEdit({ ...EMPTY })}>{tr('Tambah checkpoint', 'Add checkpoint')}</button>
           </div>
         )}
       </div>
@@ -91,7 +95,7 @@ export default function Checkpoints() {
       {editing && <CheckpointForm key={editing.id || 'new'} value={editing} onSave={save} onCancel={() => setEditing(null)} />}
 
       {editing ? null : list.length === 0 ? (
-        <p className="empty">Belum ada checkpoint. Tambahkan checkpoint pertama, misalnya Penukaran Badge ID.</p>
+        <p className="empty">{tr('Belum ada checkpoint. Tambahkan checkpoint pertama, misalnya Penukaran Badge ID.', 'No checkpoints yet. Add the first one, for example the Badge ID desk.')}</p>
       ) : (
         <ul className="cards cols">
           {list.map((cp) => (
@@ -104,17 +108,17 @@ export default function Checkpoints() {
                     <p className="card-sub">{REPEAT_LABEL[cp.repeat_rule]}</p>
                   </div>
                 </div>
-                <span className={`chip ${cp.is_active ? 'on' : 'off'}`}>{cp.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                <span className={`chip ${cp.is_active ? 'on' : 'off'}`}>{cp.is_active ? tr('Aktif', 'Active') : tr('Nonaktif', 'Inactive')}</span>
               </div>
               <div className="chips">
                 <span className={`chip kind-tag kind-${cp.kind}`}>{KIND_LABEL[cp.kind]}</span>
-                <span className="chip">{cp.requires_badge ? 'Wajib badge' : 'Tanpa badge'}</span>
-                <span className="chip">Urutan {cp.sort_order}</span>
+                <span className="chip">{cp.requires_badge ? tr('Wajib badge', 'Badge required') : tr('Tanpa badge', 'No badge needed')}</span>
+                <span className="chip">{tr('Urutan', 'Order')} {cp.sort_order}</span>
               </div>
               <div className="card-actions">
-                <button className="btn" onClick={() => startEdit(cp)}>Ubah</button>
-                <button className="btn" onClick={() => toggle(cp)}>{cp.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
-                <button className="btn btn-danger" onClick={() => remove(cp)}>Hapus</button>
+                <button className="btn" onClick={() => startEdit(cp)}>{tr('Ubah', 'Edit')}</button>
+                <button className="btn" onClick={() => toggle(cp)}>{cp.is_active ? tr('Nonaktifkan', 'Deactivate') : tr('Aktifkan', 'Activate')}</button>
+                <button className="btn btn-danger" onClick={() => remove(cp)}>{tr('Hapus', 'Delete')}</button>
               </div>
             </li>
           ))}
@@ -136,13 +140,13 @@ function CheckpointForm({ value, onSave, onCancel }) {
         onSave(f)
       }}
     >
-      <h2>{f.id ? 'Ubah checkpoint' : 'Checkpoint baru'}</h2>
+      <h2>{f.id ? tr('Ubah checkpoint', 'Edit checkpoint') : tr('Checkpoint baru', 'New checkpoint')}</h2>
       <label>
-        Nama
-        <input required value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Contoh: Booth Bakamla" />
+        {tr('Nama', 'Name')}
+        <input required value={f.name} onChange={(e) => set('name', e.target.value)} placeholder={tr('Contoh: Booth Bakamla', 'Example: Bakamla Booth')} />
       </label>
       <fieldset className="kind-picker full">
-        <legend>Tipe</legend>
+        <legend>{tr('Tipe', 'Type')}</legend>
         {Object.entries(KIND_LABEL).map(([k, v]) => (
           <label key={k} className={`kind-option kind-${k}`}>
             <input
@@ -158,13 +162,13 @@ function CheckpointForm({ value, onSave, onCancel }) {
         ))}
       </fieldset>
       <label>
-        Aturan check-in
+        {tr('Aturan check-in', 'Check-in rule')}
         <select value={f.repeat_rule} onChange={(e) => set('repeat_rule', e.target.value)}>
           {Object.entries(REPEAT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </label>
       <label>
-        Urutan tampil
+        {tr('Urutan tampil', 'Display order')}
         <input type="number" value={f.sort_order} onChange={(e) => set('sort_order', e.target.value)} />
       </label>
       <label className="check full">
@@ -174,15 +178,15 @@ function CheckpointForm({ value, onSave, onCancel }) {
           disabled={f.kind === 'badge'}
           onChange={(e) => set('requires_badge', e.target.checked)}
         />
-        Peserta wajib sudah tukar badge
+        {tr('Peserta wajib sudah tukar badge', 'Participant must have collected a badge')}
       </label>
       <label className="check full">
         <input type="checkbox" checked={f.is_active} onChange={(e) => set('is_active', e.target.checked)} />
-        Aktif (muncul di pilihan petugas)
+        {tr('Aktif (muncul di pilihan petugas)', 'Active (shown in the staff checkpoint list)')}
       </label>
       <div className="form-actions">
-        <button type="button" className="btn" onClick={onCancel}>Batal</button>
-        <button className="btn btn-primary">Simpan checkpoint</button>
+        <button type="button" className="btn" onClick={onCancel}>{tr('Batal', 'Cancel')}</button>
+        <button className="btn btn-primary">{tr('Simpan checkpoint', 'Save checkpoint')}</button>
       </div>
     </form>
   )

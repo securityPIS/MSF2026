@@ -2,16 +2,17 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { supabase } from '../../lib/supabase.js'
+import { tr } from '../../lib/i18n.jsx'
 
 const FIELDS = [
   { key: 'qr_code', label: 'Unique ID', required: true, guess: ['unique id', 'uniqueid', 'uid', 'kode qr', 'qr code', 'qr', 'barcode', 'kode', 'code', 'token'] },
-  { key: 'full_name', label: 'Nama', required: true, guess: ['nama', 'nama lengkap', 'name', 'full name'] },
+  { key: 'full_name', get label() { return tr('Nama', 'Name') }, required: true, guess: ['nama', 'nama lengkap', 'name', 'full name'] },
   { key: 'organization', label: 'Company', guess: ['company', 'instansi', 'organisasi', 'organization', 'perusahaan', 'institusi'] },
   { key: 'division', label: 'Department', guess: ['department', 'departement', 'departemen', 'division', 'divisi', 'dept', 'bagian'] },
   { key: 'job_title', label: 'Job Title', guess: ['job title', 'jabatan', 'title', 'position', 'posisi'] },
   { key: 'email', label: 'Email', guess: ['email', 'e-mail', 'surel'] },
-  { key: 'phone', label: 'Telepon', guess: ['telepon', 'no hp', 'hp', 'phone', 'whatsapp', 'wa'] },
-  { key: 'category', label: 'Kategori', guess: ['kategori', 'category', 'jenis', 'tipe', 'type'] },
+  { key: 'phone', get label() { return tr('Telepon', 'Phone') }, guess: ['telepon', 'no hp', 'hp', 'phone', 'whatsapp', 'wa'] },
+  { key: 'category', get label() { return tr('Kategori', 'Category') }, guess: ['kategori', 'category', 'jenis', 'tipe', 'type'] },
 ]
 // Company, division, dan jabatan ditebak lebih dulu supaya kolom seperti "Nama Perusahaan" tidak terbaca sebagai nama peserta
 const GUESS_ORDER = ['qr_code', 'organization', 'division', 'job_title', 'full_name', 'email', 'phone', 'category']
@@ -43,9 +44,11 @@ function analyze(rows, map) {
     const line = i + 2 // baris 1 = header
     const code = cell(r, 'qr_code').toLowerCase()
     const name = cell(r, 'full_name')
-    if (!code) return issues.push(`Baris ${line}: Unique ID kosong`)
-    if (!name) return issues.push(`Baris ${line}: nama kosong`)
-    if (seen.has(code)) return issues.push(`Baris ${line}: kode ${code} sama dengan baris ${seen.get(code)}, dilewati`)
+    if (!code) return issues.push(tr(`Baris ${line}: Unique ID kosong`, `Row ${line}: Unique ID is empty`))
+    if (!name) return issues.push(tr(`Baris ${line}: nama kosong`, `Row ${line}: name is empty`))
+    if (seen.has(code)) {
+      return issues.push(tr(`Baris ${line}: kode ${code} sama dengan baris ${seen.get(code)}, dilewati`, `Row ${line}: code ${code} duplicates row ${seen.get(code)}, skipped`))
+    }
     seen.set(code, line)
     const rec = { qr_code: code, full_name: name, updated_at: now }
     for (const k of optional) rec[k] = cell(r, k) || null
@@ -75,7 +78,7 @@ export default function Import() {
       setFileName(file.name)
       pickSheet(wb, wb.SheetNames[0])
     } catch (err) {
-      setStatus({ type: 'error', text: `File tidak bisa dibaca: ${err.message}` })
+      setStatus({ type: 'error', text: tr(`File tidak bisa dibaca: ${err.message}`, `The file could not be read: ${err.message}`) })
     }
   }
 
@@ -101,7 +104,10 @@ export default function Import() {
       const { error } = await supabase.from('participants').upsert(chunk, { onConflict: 'qr_code' })
       if (error) {
         setBusy(false)
-        setStatus({ type: 'error', text: `Impor berhenti: ${error.message}. ${i} peserta sudah tersimpan sebelum error.` })
+        setStatus({
+          type: 'error',
+          text: tr(`Impor berhenti: ${error.message}. ${i} peserta sudah tersimpan sebelum error.`, `Import stopped: ${error.message}. ${i} participants were saved before the error.`),
+        })
         return
       }
       setProgress(i + chunk.length)
@@ -109,7 +115,10 @@ export default function Import() {
     setBusy(false)
     setStatus({
       type: 'ok',
-      text: `${valid.length} peserta tersimpan. Peserta dengan Unique ID yang sudah ada diperbarui, bukan diduplikasi.`,
+      text: tr(
+        `${valid.length} peserta tersimpan. Peserta dengan Unique ID yang sudah ada diperbarui, bukan diduplikasi.`,
+        `${valid.length} participants saved. Participants whose Unique ID already existed were updated, not duplicated.`
+      ),
     })
   }
 
@@ -117,17 +126,17 @@ export default function Import() {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Peserta</p>
-          <h1>Impor dari Excel</h1>
+          <p className="eyebrow">{tr('Peserta', 'Participants')}</p>
+          <h1>{tr('Impor dari Excel', 'Import from Excel')}</h1>
         </div>
         <div className="actions">
-          <Link className="btn" to="/admin/participants">Kembali ke Peserta</Link>
+          <Link className="btn" to="/admin/participants">{tr('Kembali ke Peserta', 'Back to Participants')}</Link>
         </div>
       </div>
 
       <ol className="steps">
         <li className="panel">
-          <h2>1. Pilih file</h2>
+          <h2>1. {tr('Pilih file', 'Choose a file')}</h2>
           <input type="file" accept=".xlsx,.xls,.csv" onChange={onFile} />
           {book && book.SheetNames.length > 1 && (
             <label>
@@ -137,20 +146,20 @@ export default function Import() {
               </select>
             </label>
           )}
-          {fileName && <p className="hint">{fileName}: {rows.length} baris data</p>}
+          {fileName && <p className="hint">{fileName}: {tr(`${rows.length} baris data`, `${rows.length} data rows`)}</p>}
         </li>
 
         {headers.length > 0 && (
           <li className="panel">
-            <h2>2. Cocokkan kolom</h2>
-            <p className="hint">Kolom sudah ditebak otomatis dari judul kolom. Periksa dan ubah bila perlu.</p>
+            <h2>2. {tr('Cocokkan kolom', 'Match columns')}</h2>
+            <p className="hint">{tr('Kolom sudah ditebak otomatis dari judul kolom. Periksa dan ubah bila perlu.', 'Columns were guessed from the column headings. Check and change them if needed.')}</p>
             <div className="form-grid">
               {FIELDS.map((f) => (
                 <label key={f.key}>
-                  {f.label}{f.required ? ' (wajib)' : ''}
+                  {f.label}{f.required ? tr(' (wajib)', ' (required)') : ''}
                   <select value={map[f.key] ?? -1} onChange={(e) => setMap((m) => ({ ...m, [f.key]: Number(e.target.value) }))}>
-                    <option value={-1}>Tidak dipakai</option>
-                    {headers.map((h, i) => <option key={i} value={i}>{h || `Kolom ${i + 1}`}</option>)}
+                    <option value={-1}>{tr('Tidak dipakai', 'Not used')}</option>
+                    {headers.map((h, i) => <option key={i} value={i}>{h || tr(`Kolom ${i + 1}`, `Column ${i + 1}`)}</option>)}
                   </select>
                 </label>
               ))}
@@ -160,25 +169,28 @@ export default function Import() {
 
         {headers.length > 0 && mappingReady && (
           <li className="panel">
-            <h2>3. Periksa lalu impor</h2>
+            <h2>3. {tr('Periksa lalu impor', 'Review and import')}</h2>
             <p>
-              <strong>{valid.length}</strong> peserta siap diimpor
-              {issues.length > 0 && <>, <strong>{issues.length}</strong> baris dilewati</>}.
+              <strong>{valid.length}</strong> {tr('peserta siap diimpor', 'participants ready to import')}
+              {issues.length > 0 && <>, <strong>{issues.length}</strong> {tr('baris dilewati', 'rows skipped')}</>}.
             </p>
             {issues.length > 0 && (
               <ul className="issues">
                 {issues.slice(0, 50).map((m, i) => <li key={i}>{m}</li>)}
-                {issues.length > 50 && <li>…dan {issues.length - 50} lainnya</li>}
+                {issues.length > 50 && <li>{tr(`…dan ${issues.length - 50} lainnya`, `…and ${issues.length - 50} more`)}</li>}
               </ul>
             )}
             {valid.length === 0 && issues.length > 0 && (
               <p className="hint">
-                Kalau semua Unique ID kosong, kemungkinan kolom di Excel berisi gambar QR, bukan teks. Unique ID perlu diubah dulu menjadi teks.
+                {tr(
+                  'Kalau semua Unique ID kosong, kemungkinan kolom di Excel berisi gambar QR, bukan teks. Unique ID perlu diubah dulu menjadi teks.',
+                  'If every Unique ID is empty, the Excel column probably holds QR images, not text. Convert the Unique IDs to text first.'
+                )}
               </p>
             )}
             {valid.length > 0 && (
               <>
-                <p className="hint">Contoh {Math.min(5, valid.length)} peserta pertama:</p>
+                <p className="hint">{tr(`Contoh ${Math.min(5, valid.length)} peserta pertama:`, `First ${Math.min(5, valid.length)} participants:`)}</p>
                 <ul className="cards cols preview">
                   {valid.slice(0, 5).map((r) => (
                     <li key={r.qr_code} className="card">
@@ -197,7 +209,7 @@ export default function Import() {
             )}
             <div className="actions">
               <button className="btn btn-primary btn-block" onClick={runImport} disabled={busy || valid.length === 0}>
-                {busy ? `Mengimpor ${progress}/${valid.length}…` : `Impor ${valid.length} peserta`}
+                {busy ? tr(`Mengimpor ${progress}/${valid.length}…`, `Importing ${progress}/${valid.length}…`) : tr(`Impor ${valid.length} peserta`, `Import ${valid.length} participants`)}
               </button>
             </div>
           </li>
