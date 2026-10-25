@@ -36,7 +36,7 @@ export default function Layout() {
     <div className={`shell ${links.length > 1 ? 'has-tabs' : ''}`}>
       <header className="topbar">
         <div className="brand">
-          <BrandMark size={30} />
+          <BrandMark size={34} />
           <div className="brand-text">
             <span className="brand-name">MSF 2026</span>
             <span className="brand-sub">Checkpoint</span>

@@ -207,7 +207,7 @@ function Header() {
       <header ref={headerRef} className={`lp-header ${scrolled || open ? 'solid' : ''}`}>
         <div className="lp-wrap lp-header-row">
           <a className="lp-brand" href="#top" aria-label="Maritime Security Forum 2026" onClick={() => setOpen(false)}>
-            <BrandMark size={34} />
+            <BrandMark size={40} />
             <span>
               <b>Maritime Security</b>
               <small>Forum 2026</small>
@@ -706,7 +706,7 @@ function Footer() {
       <div className="lp-wrap lp-footer-grid">
         <div>
           <div className="lp-brand">
-            <BrandMark size={34} />
+            <BrandMark size={40} />
             <span>
               <b>Maritime Security</b>
               <small>Forum 2026</small>
