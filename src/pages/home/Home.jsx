@@ -53,16 +53,16 @@ const ICON = {
 }
 
 // Ornamen latar bertema keamanan maritim: radar, gelombang, jalur pelayaran, mata angin
-// Jaring gelombang digital (tech wave): titik-titik grid yang naik turun mengikuti gelombang, dengan efek perspektif
+// Jaring gelombang digital (tech wave): garis grid rapat yang naik turun mengikuti gelombang, dengan efek perspektif
 const TECH_WAVE = (() => {
-  const rows = 9, cols = 31
+  const rows = 18, cols = 61
   const pts = Array.from({ length: rows }, (_, r) => {
     const t = r / (rows - 1)
     const y0 = 70 + t * t * 300
     const amp = 18 + t * 34
     return Array.from({ length: cols }, (_, c) => {
       const x = (c / (cols - 1)) * 1200
-      const y = y0 + amp * Math.sin(c * 0.42 + r * 0.55) + 10 * Math.sin(c * 0.17 - r * 0.3)
+      const y = y0 + amp * Math.sin(c * 0.21 + r * 0.28) + 10 * Math.sin(c * 0.085 - r * 0.15)
       return [Math.round(x), Math.round(y)]
     })
   })
@@ -70,8 +70,6 @@ const TECH_WAVE = (() => {
   return {
     rows: pts.map(line),
     cols: pts[0].map((_, c) => line(pts.map((row) => row[c]))),
-    nodes: pts.flatMap((row, r) => row.filter((_, c) => (c + r) % 2 === 0).map(([x, y]) => [x, y, r])),
-    glow: pts.flatMap((row, r) => row.filter((_, c) => (c * 7 + r * 3) % 11 === 0).map(([x, y]) => [x, y])),
   }
 })()
 
@@ -101,18 +99,9 @@ function Deco({ kind, className = '' }) {
   if (kind === 'techwave') {
     return (
       <svg {...common} viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice">
-        <g strokeWidth="1.2">
-          {TECH_WAVE.rows.map((d, i) => <path key={`r${i}`} d={d} opacity={0.35 + i * 0.07} />)}
-          {TECH_WAVE.cols.map((d, i) => <path key={`c${i}`} d={d} opacity="0.35" />)}
-        </g>
-        <g fill="currentColor" stroke="none">
-          {TECH_WAVE.nodes.map(([x, y, r]) => <circle key={`${x}-${y}`} cx={x} cy={y} r={1.4 + r * 0.25} />)}
-          {TECH_WAVE.glow.map(([x, y]) => (
-            <g key={`g${x}-${y}`}>
-              <circle cx={x} cy={y} r="9" fillOpacity="0.18" />
-              <circle cx={x} cy={y} r="3.6" />
-            </g>
-          ))}
+        <g strokeWidth="1">
+          {TECH_WAVE.rows.map((d, i) => <path key={`r${i}`} d={d} opacity={0.35 + i * 0.035} />)}
+          {TECH_WAVE.cols.map((d, i) => <path key={`c${i}`} d={d} opacity="0.3" />)}
         </g>
       </svg>
     )
