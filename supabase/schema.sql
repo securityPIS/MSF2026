@@ -68,6 +68,14 @@ create table public.checkins (
   event_date      date not null default (now() at time zone 'Asia/Jakarta')::date
 );
 create index checkins_participant_idx on public.checkins (participant_id);
+
+-- Feedback peserta setelah acara (satu per peserta); diisi lewat fungsi submit_feedback
+create table public.feedback (
+  id            bigint generated always as identity primary key,
+  participant_id uuid not null unique references public.participants(id) on delete cascade,
+  answers       jsonb not null,
+  submitted_at  timestamptz not null default now()
+);
 create index checkins_checkpoint_idx on public.checkins (checkpoint_id, checked_in_at desc);
 
 -- ---------- Helper peran ----------
@@ -142,6 +150,7 @@ alter table public.profiles     enable row level security;
 alter table public.participants enable row level security;
 alter table public.checkpoints  enable row level security;
 alter table public.checkins     enable row level security;
+alter table public.feedback     enable row level security;
 
 create policy "roles_staff_select" on public.roles
   for select using (public.is_staff());
@@ -171,6 +180,12 @@ create policy "checkins_select" on public.checkins
   for select using ((public.has_menu('dashboard') or public.has_menu('participants'))
                     and public.can_see_checkpoint(checkpoint_id));
 create policy "checkins_admin_delete" on public.checkins
+  for delete using (public.is_admin());
+
+-- Feedback hanya ditulis lewat submit_feedback (tidak ada policy insert)
+create policy "feedback_staff_select" on public.feedback
+  for select using (public.has_menu('participants') or public.has_menu('dashboard'));
+create policy "feedback_admin_delete" on public.feedback
   for delete using (public.is_admin());
 
 -- ---------- Fungsi check-in (inti aturan checkpoint) ----------
@@ -279,6 +294,7 @@ begin
   return jsonb_build_object(
     'name', v_p.full_name,
     'organization', v_p.organization,
+    'feedback_at', (select f.submitted_at from public.feedback f where f.participant_id = v_p.id),
     'checkins', coalesce((
       select jsonb_agg(jsonb_build_object('checkpoint', c.name, 'kind', c.kind, 'at', k.checked_in_at)
                        order by k.checked_in_at)
@@ -287,12 +303,66 @@ begin
   );
 end $$;
 
+-- ---------- Feedback & sertifikat (halaman publik /feedback, tanpa login) ----------
+-- Cari peserta dari email. Hanya mengembalikan nama, instansi, dan status feedback (bukan kode QR).
+create or replace function public.feedback_lookup(p_email text)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare
+  v_email text := lower(btrim(coalesce(p_email, '')));
+  v_p public.participants%rowtype;
+  v_f public.feedback%rowtype;
+begin
+  if v_email = '' then return jsonb_build_object('status', 'not_found'); end if;
+  select * into v_p from public.participants
+  where lower(btrim(email)) = v_email order by created_at limit 1;
+  if not found then return jsonb_build_object('status', 'not_found'); end if;
+
+  select * into v_f from public.feedback where participant_id = v_p.id;
+  if not found then
+    return jsonb_build_object('status', 'pending', 'name', v_p.full_name, 'organization', v_p.organization);
+  end if;
+  return jsonb_build_object('status', 'done', 'name', v_p.full_name, 'organization', v_p.organization,
+                            'certificate_no', 'MSF2026-' || lpad(v_f.id::text, 4, '0'),
+                            'submitted_at', v_f.submitted_at);
+end $$;
+
+-- Simpan feedback sekali per peserta. Kalau sudah pernah, jawaban lama dipertahankan dan sertifikat dikembalikan.
+create or replace function public.submit_feedback(p_email text, p_answers jsonb)
+returns jsonb
+language plpgsql volatile security definer set search_path = public as $$
+declare
+  v_email text := lower(btrim(coalesce(p_email, '')));
+  v_p public.participants%rowtype;
+  v_f public.feedback%rowtype;
+begin
+  if p_answers is null or jsonb_typeof(p_answers) <> 'object' or pg_column_size(p_answers) > 20000 then
+    raise exception 'Jawaban tidak valid' using errcode = '22023';
+  end if;
+  if v_email = '' then return jsonb_build_object('status', 'not_found'); end if;
+  select * into v_p from public.participants
+  where lower(btrim(email)) = v_email order by created_at limit 1;
+  if not found then return jsonb_build_object('status', 'not_found'); end if;
+
+  insert into public.feedback (participant_id, answers) values (v_p.id, p_answers)
+  on conflict (participant_id) do nothing;
+  select * into v_f from public.feedback where participant_id = v_p.id;
+
+  return jsonb_build_object('status', 'done', 'name', v_p.full_name, 'organization', v_p.organization,
+                            'certificate_no', 'MSF2026-' || lpad(v_f.id::text, 4, '0'),
+                            'submitted_at', v_f.submitted_at);
+end $$;
+
 -- ---------- Hak eksekusi fungsi ----------
 revoke execute on function public.perform_checkin(text, uuid) from public, anon;
 revoke execute on function public.dashboard_stats() from public, anon;
 grant  execute on function public.perform_checkin(text, uuid) to authenticated;
 grant  execute on function public.dashboard_stats() to authenticated;
 grant  execute on function public.participant_history(text) to anon, authenticated;
+revoke execute on function public.feedback_lookup(text) from public;
+revoke execute on function public.submit_feedback(text, jsonb) from public;
+grant  execute on function public.feedback_lookup(text) to anon, authenticated;
+grant  execute on function public.submit_feedback(text, jsonb) to anon, authenticated;
 
 -- ---------- Realtime untuk dashboard ----------
 alter publication supabase_realtime add table public.checkins;

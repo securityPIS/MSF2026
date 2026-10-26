@@ -215,6 +215,7 @@ function Header() {
           </a>
           <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
             {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
+            <Link to="/feedback">Feedback</Link>
           </nav>
           <div className="lp-header-actions">
             <LangSwitch />
@@ -239,6 +240,10 @@ function Header() {
               <Icon name="arrow" size={18} />
             </a>
           ))}
+          <Link to="/feedback">
+            {tr('Feedback & sertifikat', 'Feedback & certificate')}
+            <Icon name="arrow" size={18} />
+          </Link>
           <div className="lp-mobile-cta">
             <StaffButton />
           </div>
@@ -721,6 +726,7 @@ function Footer() {
         </div>
         <nav aria-label={tr('Tautan footer', 'Footer links')}>
           {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
+          <Link to="/feedback">Feedback</Link>
         </nav>
         <div className="lp-footer-cta">
           <StaffButton />

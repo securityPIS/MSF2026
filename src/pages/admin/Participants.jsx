@@ -318,20 +318,23 @@ function CreatedCard({ p, onAgain, onOpen, onClose }) {
 function ParticipantDetail({ id, canCancel, onBack }) {
   const [p, setP] = useState(null)
   const [checkins, setCheckins] = useState([])
+  const [feedback, setFeedback] = useState(undefined) // undefined = tabel feedback belum ada / gagal dimuat
   const [error, setError] = useState('')
   const confirm = useConfirm()
 
   const load = useCallback(async () => {
-    const [{ data: pd }, { data: cd }] = await Promise.all([
+    const [{ data: pd }, { data: cd }, fb] = await Promise.all([
       supabase.from('participants').select('*').eq('id', id).single(),
       supabase
         .from('checkins')
         .select('id, checked_in_at, checkpoint:checkpoints(name,kind), officer:profiles(full_name)')
         .eq('participant_id', id)
         .order('checked_in_at'),
+      supabase.from('feedback').select('submitted_at, answers').eq('participant_id', id).maybeSingle(),
     ])
     setP(pd)
     setCheckins(cd || [])
+    setFeedback(fb.error ? undefined : fb.data)
   }, [id])
 
   useEffect(() => {
@@ -397,6 +400,20 @@ function ParticipantDetail({ id, canCancel, onBack }) {
             </li>
           ))}
         </ol>
+      )}
+
+      {feedback !== undefined && (
+        <>
+          <h3>Feedback</h3>
+          {feedback ? (
+            <p className="feedback-status done">
+              ✓ {tr(`Sudah mengisi feedback · ${formatTime(feedback.submitted_at)}`, `Feedback submitted · ${formatTime(feedback.submitted_at)}`)}
+              {feedback.answers?.overall && <span>{tr('Penilaian keseluruhan', 'Overall rating')}: {feedback.answers.overall}/5</span>}
+            </p>
+          ) : (
+            <p className="feedback-status">{tr('Belum mengisi feedback.', 'Has not submitted feedback yet.')}</p>
+          )}
+        </>
       )}
 
       <p className="hint">

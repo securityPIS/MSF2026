@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { FullMessage } from '../lib/auth.jsx'
 import { formatTime } from '../lib/format.js'
@@ -47,6 +47,13 @@ export default function ParticipantHistory() {
               </li>
             ))}
           </ol>
+        )}
+        {data.feedback_at ? (
+          <p className="feedback-status done">✓ {tr(`Feedback diisi pada ${formatTime(data.feedback_at)}`, `Feedback submitted on ${formatTime(data.feedback_at)}`)}</p>
+        ) : (
+          <p className="feedback-status">
+            {tr('Belum mengisi feedback.', 'Feedback not submitted yet.')} <Link to="/feedback">{tr('Isi feedback & dapatkan sertifikat', 'Give feedback & get your certificate')}</Link>
+          </p>
         )}
       </div>
     </div>

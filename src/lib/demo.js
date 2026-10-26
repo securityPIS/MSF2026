@@ -83,7 +83,9 @@ function seed() {
     ['5c61818ba6', 'Sigit Wibowo', 'TNI AL', 'Umum'],
   ]
   const participants = people.map(([qr_code, full_name, organization, category]) => ({
-    id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, email: null, phone: null,
+    id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, phone: null,
+    // Email contoh untuk mencoba halaman /feedback, mis. agus.wijaya@contoh.id
+    email: `${full_name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '')}@contoh.id`,
     created_at: ago(3000), updated_at: ago(3000),
   }))
 
@@ -110,13 +112,13 @@ function seed() {
   ]
   profiles.find((p) => p.id === 'demo-officer-2').role_id = roles[0].id
 
-  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1 }
+  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1 }
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(DB_KEY)
-    if (raw) return { roles: [], ...JSON.parse(raw) }
+    if (raw) return { roles: [], feedback: [], nextFeedbackId: 1, ...JSON.parse(raw) }
   } catch { /* data rusak atau storage diblokir: mulai dari seed */ }
   return seed()
 }
@@ -223,6 +225,7 @@ function compare(a, b) {
 // Tiruan RLS select: riwayat check-in hanya untuk checkpoint yang ditangani role (policy checkins_select)
 const ROW_POLICIES = {
   checkins: (k) => (hasMenu('dashboard') || hasMenu('participants')) && canSeeCheckpoint(k.checkpoint_id),
+  feedback: () => hasMenu('dashboard') || hasMenu('participants'),
 }
 
 class Query {
@@ -344,7 +347,10 @@ class Query {
     }
     db[this.table] = db[this.table].filter((r) => !gone.has(r.id))
     if (this.table === 'checkpoints') db.checkins = db.checkins.filter((k) => !gone.has(k.checkpoint_id))
-    if (this.table === 'participants') db.checkins = db.checkins.filter((k) => !gone.has(k.participant_id))
+    if (this.table === 'participants') {
+      db.checkins = db.checkins.filter((k) => !gone.has(k.participant_id))
+      db.feedback = db.feedback.filter((f) => !gone.has(f.participant_id))
+    }
     if (this.table === 'checkins' || this.table === 'checkpoints' || this.table === 'participants') notifyChange('checkins')
     return { data: null, error: null }
   }
@@ -433,8 +439,40 @@ const RPC = {
         const c = db.checkpoints.find((x) => x.id === k.checkpoint_id)
         return { checkpoint: c?.name, kind: c?.kind, at: k.checked_in_at }
       })
-    return { name: p.full_name, organization: p.organization, checkins }
+    const fb = db.feedback.find((f) => f.participant_id === p.id)
+    return { name: p.full_name, organization: p.organization, feedback_at: fb?.submitted_at ?? null, checkins }
   },
+
+  feedback_lookup({ p_email }) {
+    const p = participantByEmail(p_email)
+    if (!p) return { status: 'not_found' }
+    const fb = db.feedback.find((f) => f.participant_id === p.id)
+    return fb ? feedbackDone(p, fb) : { status: 'pending', name: p.full_name, organization: p.organization }
+  },
+
+  submit_feedback({ p_email, p_answers }) {
+    if (!p_answers || typeof p_answers !== 'object' || Array.isArray(p_answers)) throw new Error('Jawaban tidak valid')
+    const p = participantByEmail(p_email)
+    if (!p) return { status: 'not_found' }
+    let fb = db.feedback.find((f) => f.participant_id === p.id)
+    if (!fb) {
+      fb = { id: db.nextFeedbackId++, participant_id: p.id, answers: clone(p_answers), submitted_at: new Date().toISOString() }
+      db.feedback.push(fb)
+    }
+    return feedbackDone(p, fb)
+  },
+}
+
+function participantByEmail(email) {
+  const e = String(email ?? '').trim().toLowerCase()
+  return e ? db.participants.find((p) => String(p.email ?? '').trim().toLowerCase() === e) : null
+}
+
+function feedbackDone(p, fb) {
+  return {
+    status: 'done', name: p.full_name, organization: p.organization,
+    certificate_no: `MSF2026-${String(fb.id).padStart(4, '0')}`, submitted_at: fb.submitted_at,
+  }
 }
 
 // ---------- Edge Function tiruan (port dari supabase/functions/manage-staff) ----------
