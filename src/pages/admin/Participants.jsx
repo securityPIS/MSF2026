@@ -321,6 +321,7 @@ function ParticipantDetail({ id, canCancel, onBack }) {
   const [checkins, setCheckins] = useState([])
   const [feedback, setFeedback] = useState(undefined) // undefined = tabel feedback belum ada / gagal dimuat
   const [error, setError] = useState('')
+  const [tab, setTab] = useState('info')
   const confirm = useConfirm()
 
   const load = useCallback(async () => {
@@ -364,62 +365,89 @@ function ParticipantDetail({ id, canCancel, onBack }) {
 
   return (
     <div className="detail">
-      <button className="btn-ghost detail-back" onClick={onBack}>← {tr('Kembali ke daftar', 'Back to list')}</button>
-      <h2>{p.full_name}</h2>
-      <dl>
-        <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
-        <div><dt>Department</dt><dd>{p.division || '-'}</dd></div>
-        <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
-        <div><dt>{tr('Kategori', 'Category')}</dt><dd>{p.category || '-'}</dd></div>
-        <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
-        <div><dt>{tr('Telepon', 'Phone')}</dt><dd>{p.phone || '-'}</dd></div>
-        <div><dt>Unique ID</dt><dd><code>{p.qr_code}</code></dd></div>
-      </dl>
-
-      <div className="detail-qr">
-        <QrCode code={p.qr_code} size={140} />
-        <button className="btn" onClick={() => downloadQrCard({ code: p.qr_code, name: p.full_name, organization: p.organization })}>
-          {tr('Unduh kartu QR', 'Download QR card')}
-        </button>
-      </div>
-
-      <h3>{tr('Riwayat check-in', 'Check-in history')}</h3>
-      {error && <p className="notice error">{error}</p>}
-      {checkins.length === 0 ? (
-        <p className="empty">{tr('Belum pernah check-in di checkpoint mana pun.', 'Has not checked in at any checkpoint yet.')}</p>
-      ) : (
-        <ol className="timeline with-icons">
-          {checkins.map((c) => (
-            <li key={c.id}>
-              <KindIcon kind={c.checkpoint?.kind} size="sm" />
-              <time>{formatTime(c.checked_in_at)}</time>
-              <div>
-                <strong>{c.checkpoint?.name}</strong>
-                <span>{tr('Petugas', 'Staff')}: {c.officer?.full_name ?? tr('tidak diketahui', 'unknown')}</span>
-              </div>
-              {canCancel && <button className="btn-link danger" onClick={() => cancel(c)}>{tr('Batalkan', 'Cancel')}</button>}
-            </li>
+      <div className="detail-bar">
+        <button className="btn-ghost detail-back" onClick={onBack}>← {tr('Kembali ke daftar', 'Back to list')}</button>
+        <div className="segmented detail-tabs" role="tablist" aria-label={tr('Detail peserta', 'Participant details')}>
+          {[
+            ['info', 'Info'],
+            ['history', `${tr('Riwayat', 'History')} (${checkins.length})`],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              role="tab"
+              id={`pd-tab-${key}`}
+              aria-selected={tab === key}
+              aria-controls={`pd-panel-${key}`}
+              className={tab === key ? 'active' : ''}
+              onClick={() => setTab(key)}
+            >
+              {label}
+            </button>
           ))}
-        </ol>
-      )}
+        </div>
+      </div>
+      <h2>{p.full_name}</h2>
 
-      {feedback !== undefined && (
-        <>
-          <h3>Feedback</h3>
-          {feedback ? (
-            <p className="feedback-status done">
-              ✓ {tr(`Sudah mengisi feedback · ${formatTime(feedback.submitted_at)}`, `Feedback submitted · ${formatTime(feedback.submitted_at)}`)}
-              {feedback.answers?.overall && <span>{tr('Penilaian keseluruhan', 'Overall rating')}: {feedback.answers.overall}/5</span>}
-            </p>
+      {tab === 'info' ? (
+        <div id="pd-panel-info" role="tabpanel" aria-labelledby="pd-tab-info">
+          <dl>
+            <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
+            <div><dt>Department</dt><dd>{p.division || '-'}</dd></div>
+            <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
+            <div><dt>{tr('Kategori', 'Category')}</dt><dd>{p.category || '-'}</dd></div>
+            <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
+            <div><dt>{tr('Telepon', 'Phone')}</dt><dd>{p.phone || '-'}</dd></div>
+            <div><dt>Unique ID</dt><dd><code>{p.qr_code}</code></dd></div>
+          </dl>
+
+          <div className="detail-qr">
+            <QrCode code={p.qr_code} size={140} />
+            <button className="btn" onClick={() => downloadQrCard({ code: p.qr_code, name: p.full_name, organization: p.organization })}>
+              {tr('Unduh kartu QR', 'Download QR card')}
+            </button>
+          </div>
+
+          <p className="hint">
+            {tr('Link riwayat untuk peserta:', 'History link for the participant:')} <a href={link} target="_blank" rel="noreferrer">{link}</a>
+          </p>
+        </div>
+      ) : (
+        <div id="pd-panel-history" role="tabpanel" aria-labelledby="pd-tab-history">
+          <h3>{tr('Riwayat check-in', 'Check-in history')}</h3>
+          {error && <p className="notice error">{error}</p>}
+          {checkins.length === 0 ? (
+            <p className="empty">{tr('Belum pernah check-in di checkpoint mana pun.', 'Has not checked in at any checkpoint yet.')}</p>
           ) : (
-            <p className="feedback-status">{tr('Belum mengisi feedback.', 'Has not submitted feedback yet.')}</p>
+            <ol className="timeline with-icons">
+              {checkins.map((c) => (
+                <li key={c.id}>
+                  <KindIcon kind={c.checkpoint?.kind} size="sm" />
+                  <time>{formatTime(c.checked_in_at)}</time>
+                  <div>
+                    <strong>{c.checkpoint?.name}</strong>
+                    <span>{tr('Petugas', 'Staff')}: {c.officer?.full_name ?? tr('tidak diketahui', 'unknown')}</span>
+                  </div>
+                  {canCancel && <button className="btn-link danger" onClick={() => cancel(c)}>{tr('Batalkan', 'Cancel')}</button>}
+                </li>
+              ))}
+            </ol>
           )}
-        </>
-      )}
 
-      <p className="hint">
-        {tr('Link riwayat untuk peserta:', 'History link for the participant:')} <a href={link} target="_blank" rel="noreferrer">{link}</a>
-      </p>
+          {feedback !== undefined && (
+            <>
+              <h3>Feedback</h3>
+              {feedback ? (
+                <p className="feedback-status done">
+                  ✓ {tr(`Sudah mengisi feedback · ${formatTime(feedback.submitted_at)}`, `Feedback submitted · ${formatTime(feedback.submitted_at)}`)}
+                  {feedback.answers?.overall && <span>{tr('Penilaian keseluruhan', 'Overall rating')}: {feedback.answers.overall}/5</span>}
+                </p>
+              ) : (
+                <p className="feedback-status">{tr('Belum mengisi feedback.', 'Has not submitted feedback yet.')}</p>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

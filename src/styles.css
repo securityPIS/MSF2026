@@ -320,7 +320,11 @@ section > h2::before, .section-head > h2::before { content: ''; width: 4px; heig
 .list span { color: var(--muted); font-size: 0.8rem; }
 .detail { padding: 1.1rem; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); }
 .detail.empty { display: none; }
-.detail-back { margin-bottom: 0.75rem; }
+/* Baris atas detail: tombol kembali (HP) sejajar dengan tab Info / Riwayat */
+.detail-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.9rem; }
+.detail-back { flex: none; }
+.detail-tabs { flex: 0 1 260px; }
+.detail-tabs button { min-height: 36px; white-space: nowrap; }
 /* HP: daftar dan detail bergantian, tidak bersebelahan */
 .split.has-selection .list-col { display: none; }
 @media (min-width: 860px) {
@@ -329,6 +333,7 @@ section > h2::before, .section-head > h2::before { content: ''; width: 4px; heig
   .list { max-height: 72vh; overflow: auto; padding-right: 0.25rem; }
   .detail.empty { display: block; }
   .detail-back { display: none; }
+  .detail-bar { justify-content: flex-start; }
 }
 dl { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 1rem; margin: 0 0 1rem; }
 dl > div { display: grid; gap: 0.05rem; }
