@@ -698,6 +698,8 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .fb-eyebrow { margin: 0; color: var(--cyan); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .fb-lead { margin: 0; color: var(--muted); }
 .fb-hint { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.fb-back { justify-self: center; color: var(--muted); font-size: 0.88rem; font-weight: 600; text-decoration: none; }
+.fb-back:hover { color: var(--cyan); }
 
 .fb-person { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
 .fb-org { margin: 0.25rem 0 0; color: var(--muted); }

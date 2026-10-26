@@ -205,6 +205,7 @@ function EmailStep({ onFound }) {
       <button className="btn btn-primary btn-block" disabled={busy}>
         {busy ? tr('Memeriksa…', 'Checking…') : tr('Lanjut', 'Continue')}
       </button>
+      <Link className="fb-back" to="/">← {tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
     </form>
   )
 }
