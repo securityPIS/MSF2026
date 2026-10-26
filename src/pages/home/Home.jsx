@@ -540,7 +540,7 @@ function SpeakerDialog({ speakerKey, onClose }) {
 function Attend() {
   return (
     <section className="lp-section lp-dark lp-attend-section">
-      <img className="lp-attend-photo" src="/landing/banner.webp" alt="" loading="lazy" width="1400" height="630" />
+      <img className="lp-attend-photo" src="/landing/attend.webp" alt="" loading="lazy" width="1600" height="900" />
       <Deco kind="waves" className="lp-deco-wave-top" />
       <Deco kind="waves" className="lp-deco-wave-mid" />
       <Deco kind="waves" className="lp-deco-bottom" />
