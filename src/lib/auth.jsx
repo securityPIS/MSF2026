@@ -86,7 +86,7 @@ export function RequireRole({ roles, children }) {
   return children
 }
 
-// Untuk menu yang bisa diatur per role (Scan, Dashboard, Peserta)
+// Untuk menu yang bisa diatur per role (Scan, Monitoring, Peserta)
 export function RequireMenu({ menu, children }) {
   const { profile } = useAuth()
   return (

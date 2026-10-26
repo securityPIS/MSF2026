@@ -9,8 +9,8 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 
 - **Publik**: landing page acara di `/` (manfaat, agenda dua hari, profil 16 pembicara, partner, lokasi dan rute, FAQ, dan grup WhatsApp komunitas). Isi diambil dari maritimesecurityforum.com, ada di `src/pages/home/content.js`, gambar di `public/landing/`. Tombol "Masuk petugas" membuka `/login`; setelah masuk, petugas diarahkan lewat `/app` ke halaman kerjanya.
 - **Feedback & sertifikat**: peserta membuka `/feedback`, memasukkan email yang terdaftar, mengisi feedback, lalu mengunduh sertifikat keikutsertaan (PNG). Satu feedback per peserta; statusnya tampil di detail peserta (admin) dan di riwayat `/p/<kode-qr>`. Pertanyaan masih contoh, ada di `src/pages/Feedback.jsx`.
-- **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas (lewat ikon pengaturan di kanan atas), batalkan check-in, reset semua check-in per checkpoint dari Dashboard.
-- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya (ada tanda koneksi; saat internet putus, scan ditolak dengan jelas, bukan diam-diam hilang), lihat dashboard real-time, unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
+- **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas (lewat ikon pengaturan di kanan atas), batalkan check-in, reset semua check-in per checkpoint dari Monitoring.
+- **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya (ada tanda koneksi; saat internet putus, scan ditolak dengan jelas, bukan diam-diam hilang), lihat Monitoring (data real-time), unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
 - **Semua akun**: ikon pengaturan di kanan atas berisi pilihan bahasa (IDN/ENG, tersimpan per perangkat) dan Keluar. Bahasa juga bisa dipilih di halaman login.
 - **Peserta**: tanpa login. Riwayat check-in bisa dibuka di `/p/<kode-qr>`.
 
@@ -19,12 +19,12 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 Di menu **Petugas > Role akses**, admin bisa membuat role untuk akun petugas, misalnya "Petugas Booth" yang hanya
 bisa scan di Booth 1 dan Booth 2. Tiap role mengatur:
 
-- Menu yang bisa dibuka: Scan, Dashboard, Peserta (minimal satu), dan apakah boleh menambah peserta.
+- Menu yang bisa dibuka: Scan, Monitoring, Peserta (minimal satu), dan apakah boleh menambah peserta.
 - Checkpoint yang ditangani: semua, atau pilih tertentu. Ini membatasi scan sekaligus data yang terlihat: statistik
-  dan check-in terbaru di Dashboard, laporan Excel, dan riwayat check-in peserta hanya untuk checkpoint tersebut.
+  dan check-in terbaru di Monitoring, laporan Excel, dan riwayat check-in peserta hanya untuk checkpoint tersebut.
 
 Role dipasang ke akun lewat form akun. Petugas tanpa role khusus memakai **Petugas (akses penuh)**. Role yang masih
-dipakai akun tidak bisa dihapus. Aturan scan, dashboard, dan tambah peserta juga dijaga di database
+dipakai akun tidak bisa dihapus. Aturan scan, monitoring, dan tambah peserta juga dijaga di database
 (`can_see_checkpoint`, `can_use_checkpoint`, `has_menu`, `can_add_participants`), bukan hanya disembunyikan di tampilan.
 
 ## Aturan checkpoint
@@ -98,7 +98,7 @@ Seed berisi peserta uji dengan kode `e883d05a5a` (sama dengan contoh QR panitia)
 
 1. Login admin, buka **Scan**, pilih *Lunch*, scan QR uji: hasilnya merah *Belum tukar badge*.
 2. Pilih *Penukaran Badge ID*, scan: hijau. Scan lagi: kuning *Sudah check-in*.
-3. Pilih *Lunch*, scan: hijau. Buka **Dashboard** di laptop dan lihat angka bertambah langsung.
+3. Pilih *Lunch*, scan: hijau. Buka **Monitoring** di laptop dan lihat angka bertambah langsung.
 
 ## Impor peserta
 
@@ -114,7 +114,7 @@ Kolom Unique ID harus berupa **teks** (contoh `e883d05a5a`), bukan gambar QR.
 supabase/schema.sql      tabel, RLS, fungsi check-in, statistik, realtime
 supabase/seed.sql        checkpoint awal + peserta uji
 src/pages/Scan.jsx       scanner petugas + layar hasil
-src/pages/admin/*        dashboard, peserta, impor, checkpoint, petugas
+src/pages/admin/*        monitoring (Dashboard.jsx), peserta, impor, checkpoint, petugas
 src/pages/ParticipantHistory.jsx   halaman publik peserta
 src/pages/home/*         landing page acara (isi di content.js)
 ```

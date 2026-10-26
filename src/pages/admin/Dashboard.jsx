@@ -90,7 +90,7 @@ export default function Dashboard() {
   if (!stats) {
     return (
       <div className="page">
-        <p>{error || tr('Memuat dashboard…', 'Loading dashboard…')}</p>
+        <p>{error || tr('Memuat monitoring…', 'Loading monitoring…')}</p>
       </div>
     )
   }
@@ -104,7 +104,7 @@ export default function Dashboard() {
       <div className="page-head">
         <div>
           <p className="eyebrow">Maritime Security Forum 2026</p>
-          <h1>Dashboard</h1>
+          <h1>Monitoring</h1>
         </div>
         <div className="actions">
           <span className={`live ${live ? 'on' : ''}`}>{live ? tr('Update langsung', 'Live updates') : tr('Menyambungkan…', 'Connecting…')}</span>

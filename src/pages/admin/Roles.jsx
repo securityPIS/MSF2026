@@ -233,8 +233,8 @@ function RoleForm({ value, checkpoints, onSave, onCancel }) {
           <legend>{tr('Checkpoint yang ditangani', 'Assigned checkpoints')}</legend>
           <p className="hint" style={{ margin: '0 0 0.25rem' }}>
             {tr(
-              'Berlaku untuk scan, data di dashboard, laporan Excel, dan riwayat check-in peserta.',
-              'Applies to scanning, dashboard data, the Excel report, and participant check-in history.'
+              'Berlaku untuk scan, data di Monitoring, laporan Excel, dan riwayat check-in peserta.',
+              'Applies to scanning, Monitoring data, the Excel report, and participant check-in history.'
             )}
           </p>
           <div className="segmented">

@@ -28,7 +28,7 @@ export default function Layout() {
 
   const links = [
     { to: '/scan', label: 'Scan', icon: 'scan', menu: 'scan' },
-    { to: '/admin', label: 'Dashboard', icon: 'dashboard', end: true, menu: 'dashboard' },
+    { to: '/admin', label: 'Monitoring', icon: 'dashboard', end: true, menu: 'dashboard' },
     { to: '/admin/participants', label: tr('Peserta', 'Participants'), icon: 'participants', menu: 'participants' },
   ].filter((l) => canMenu(profile, l.menu))
 

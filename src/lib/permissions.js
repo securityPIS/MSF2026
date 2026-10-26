@@ -4,7 +4,7 @@ import { tr } from './i18n.jsx'
 
 export const MENUS = [
   { key: 'scan', label: 'Scan', path: '/scan' },
-  { key: 'dashboard', label: 'Dashboard', path: '/admin' },
+  { key: 'dashboard', label: 'Monitoring', path: '/admin' },
   { key: 'participants', get label() { return tr('Peserta', 'Participants') }, path: '/admin/participants' },
 ]
 
@@ -21,7 +21,7 @@ export function canMenu(profile, menu) {
   return !profile.perm || profile.perm.menus.includes(menu)
 }
 
-// Checkpoint yang ditangani: data dashboard dan riwayat hanya untuk checkpoint ini
+// Checkpoint yang ditangani: data monitoring dan riwayat hanya untuk checkpoint ini
 export function canSeeCheckpoint(profile, checkpointId) {
   if (isAdmin(profile)) return true
   if (!isOfficer(profile)) return false

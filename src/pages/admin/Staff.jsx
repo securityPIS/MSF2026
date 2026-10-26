@@ -172,7 +172,7 @@ function StaffForm({ value, roles, isSelf, onSave, onCancel }) {
     { key: 'admin', role: 'admin', role_id: null, label: 'Admin', hint: tr('Semua menu termasuk pengaturan', 'All menus including settings'), cls: 'role-admin' },
     {
       key: 'officer', role: 'officer', role_id: null, label: tr('Petugas (akses penuh)', 'Staff (full access)'),
-      hint: tr('Scan semua checkpoint, dashboard, peserta', 'Scan at every checkpoint, dashboard, participants'), cls: 'role-officer',
+      hint: tr('Scan semua checkpoint, monitoring, peserta', 'Scan at every checkpoint, monitoring, participants'), cls: 'role-officer',
     },
     ...roles.map((r) => ({
       key: `role:${r.id}`, role: 'officer', role_id: r.id, label: r.name,
