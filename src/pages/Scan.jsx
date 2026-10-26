@@ -13,6 +13,7 @@ const STORAGE_KEY = 'msf2026.checkpoint'
 const READER_ID = 'qr-reader'
 const SAME_CODE_COOLDOWN = 5000 // ms: QR yang sama diabaikan selama kamera masih mengarah padanya
 const RETRYABLE = ['offline', 'timeout', 'error'] // gagal karena koneksi: QR yang sama boleh langsung di-scan ulang
+const TOAST_MS = 4000 // lama pesan sukses tampil setelah Approve
 
 export default function Scan() {
   const { profile } = useAuth()
@@ -23,6 +24,7 @@ export default function Scan() {
   const [camError, setCamError] = useState('')
   const [okCount, setOkCount] = useState(0)
   const [online, setOnline] = useConnection()
+  const [toast, setToast] = useState(null)
 
   const cpRef = useRef(cpId)
   const lockRef = useRef(false)
@@ -55,6 +57,23 @@ export default function Scan() {
     setResult(null)
     lockRef.current = false
   }, [])
+
+  // Approve pada check-in yang berhasil: tutup layar hasil lalu tampilkan pesan sukses singkat
+  const approve = useCallback(
+    (res, cp) => {
+      if (res?.status === 'ok') {
+        setToast({ id: Date.now(), name: res.participant?.name, checkpoint: res.checkpoint || cp?.name, kind: cp?.kind })
+      }
+      dismiss()
+    },
+    [dismiss]
+  )
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), TOAST_MS)
+    return () => clearTimeout(t)
+  }, [toast])
 
   const submitCode = useCallback(
     async (raw) => {
@@ -155,7 +174,21 @@ export default function Scan() {
 
       <p className="scan-count">{tr(`${okCount} check-in berhasil sejak halaman ini dibuka`, `${okCount} successful check-in${okCount === 1 ? '' : 's'} since this page was opened`)}</p>
 
-      {result && <ResultOverlay result={result} checkpoint={current} onClose={dismiss} />}
+      {toast && (
+        <div key={toast.id} className="scan-toast" role="status" aria-live="polite" onClick={() => setToast(null)}>
+          <span className="scan-toast-check" aria-hidden="true">✓</span>
+          <div>
+            <b>{tr('Check-in berhasil', 'Check-in successful')}</b>
+            <strong>{toast.name}</strong>
+            <span className="scan-toast-cp">
+              <KindIcon kind={toast.kind} size="sm" plain />
+              {toast.checkpoint}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {result && <ResultOverlay result={result} checkpoint={current} onClose={() => approve(result, current)} />}
     </div>
   )
 }
