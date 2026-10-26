@@ -53,6 +53,26 @@ const ICON = {
 }
 
 // Ornamen latar bertema keamanan maritim: radar, gelombang, jalur pelayaran, mata angin
+// Jaring gelombang digital (tech wave): garis grid rapat yang naik turun mengikuti gelombang, dengan efek perspektif
+const TECH_WAVE = (() => {
+  const rows = 18, cols = 61
+  const pts = Array.from({ length: rows }, (_, r) => {
+    const t = r / (rows - 1)
+    const y0 = 70 + t * t * 300
+    const amp = 18 + t * 34
+    return Array.from({ length: cols }, (_, c) => {
+      const x = (c / (cols - 1)) * 1200
+      const y = y0 + amp * Math.sin(c * 0.21 + r * 0.28) + 10 * Math.sin(c * 0.085 - r * 0.15)
+      return [Math.round(x), Math.round(y)]
+    })
+  })
+  const line = (p) => p.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join('')
+  return {
+    rows: pts.map(line),
+    cols: pts[0].map((_, c) => line(pts.map((row) => row[c]))),
+  }
+})()
+
 function Deco({ kind, className = '' }) {
   const common = { className: `lp-deco lp-deco-${kind} ${className}`, 'aria-hidden': true, focusable: 'false', fill: 'none', stroke: 'currentColor' }
   if (kind === 'radar') {
@@ -73,6 +93,16 @@ function Deco({ kind, className = '' }) {
         {[0, 28, 56, 84, 112].map((y, i) => (
           <path key={y} d={`M0 ${100 + y}C150 ${60 + y} 300 ${150 + y} 450 ${100 + y}S750 ${50 + y} 900 ${100 + y}S1150 ${150 + y} 1200 ${90 + y}`} opacity={1 - i * 0.16} />
         ))}
+      </svg>
+    )
+  }
+  if (kind === 'techwave') {
+    return (
+      <svg {...common} viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice">
+        <g strokeWidth="1">
+          {TECH_WAVE.rows.map((d, i) => <path key={`r${i}`} d={d} opacity={0.35 + i * 0.035} />)}
+          {TECH_WAVE.cols.map((d, i) => <path key={`c${i}`} d={d} opacity="0.3" />)}
+        </g>
       </svg>
     )
   }
@@ -454,8 +484,9 @@ function Programme({ onSpeaker }) {
 
 function Speakers({ onSpeaker }) {
   return (
-    <section className="lp-section lp-light" id="speakers">
-      <Deco kind="route" className="lp-deco-tr" />
+    <section className="lp-section lp-light lp-speakers-section" id="speakers">
+      <Deco kind="techwave" className="lp-deco-techwave-top" />
+      <Deco kind="techwave" className="lp-deco-techwave" />
       <div className="lp-wrap">
         <SectionHead
           eyebrow={tr('Pembicara', 'Speakers')}
@@ -545,7 +576,7 @@ function SpeakerDialog({ speakerKey, onClose }) {
 function Attend() {
   return (
     <section className="lp-section lp-dark lp-attend-section">
-      <img className="lp-attend-photo" src="/landing/banner.webp" alt="" loading="lazy" width="1400" height="630" />
+      <img className="lp-attend-photo" src="/landing/attend.webp" alt="" loading="lazy" width="1600" height="900" />
       <Deco kind="waves" className="lp-deco-wave-top" />
       <Deco kind="waves" className="lp-deco-wave-mid" />
       <Deco kind="waves" className="lp-deco-bottom" />

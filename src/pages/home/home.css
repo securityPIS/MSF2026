@@ -34,6 +34,19 @@
 .lp-deco-bl { bottom: -70px; left: -90px; width: 360px; height: auto; }
 .lp-deco-lg { width: 520px; }
 .lp-deco-bottom { left: 0; right: 0; bottom: -30px; width: 100%; height: 180px; }
+.lp-deco-techwave, .lp-deco-techwave-top { left: 0; right: 0; width: 100%; height: 420px; }
+.lp-deco-techwave {
+  bottom: 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
+}
+.lp-deco-techwave-top {
+  top: 0; transform: scaleY(-1);
+  -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 60%);
+  mask-image: linear-gradient(0deg, transparent 0%, #000 60%);
+}
+.lp-light .lp-deco-techwave, .lp-light .lp-deco-techwave-top { opacity: 0.32; }
+@media (max-width: 640px) { .lp-deco-techwave, .lp-deco-techwave-top { height: 260px; } }
 .lp-deco-card { top: -40px; right: -40px; width: 220px; height: auto; opacity: 0.12; }
 @media (max-width: 640px) { .lp-deco-tr, .lp-deco-bl { width: 240px; } .lp-deco-lg { width: 340px; } }
 .lp-wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 20px; }
