@@ -51,9 +51,10 @@ export default function Participants() {
     }
   }, [q, letter, page, reload])
 
-  function pickLetter(l) {
+  function pickLetter(l, el) {
     setLetter(l)
     setPage(0)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
   }
 
   function open(id) {
@@ -117,11 +118,11 @@ export default function Participants() {
       />
 
       <div className="letters" role="group" aria-label={tr('Saring berdasarkan huruf awal nama', 'Filter by first letter of name')}>
-        <button className={`letter all ${letter === '' ? 'active' : ''}`} aria-pressed={letter === ''} onClick={() => pickLetter('')}>
+        <button className={`letter all ${letter === '' ? 'active' : ''}`} aria-pressed={letter === ''} onClick={(e) => pickLetter('', e.currentTarget)}>
           {tr('Semua', 'All')}
         </button>
         {LETTERS.map((l) => (
-          <button key={l} className={`letter ${letter === l ? 'active' : ''}`} aria-pressed={letter === l} onClick={() => pickLetter(l)}>
+          <button key={l} className={`letter ${letter === l ? 'active' : ''}`} aria-pressed={letter === l} onClick={(e) => pickLetter(l, e.currentTarget)}>
             {l}
           </button>
         ))}

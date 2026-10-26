@@ -547,18 +547,26 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .pager-info { color: var(--muted); font-size: 0.8rem; text-align: center; white-space: nowrap; }
 .pager-info b { color: #fff; }
 
-/* Saringan huruf awal (A–Z), membungkus ke bawah, tanpa geser ke samping */
-.letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 0.3rem; margin: 0.25rem 0 0.75rem; }
+/* Saringan huruf awal (A–Z): satu baris yang bisa digeser kiri-kanan supaya hemat tempat */
+.letters {
+  display: flex; gap: 0.3rem; margin: 0.25rem 0 0.75rem; padding: 2px 28px 6px 2px;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  /* Tepi kanan memudar: tanda masih ada huruf lain di samping */
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+}
+.letters::-webkit-scrollbar { height: 4px; }
+.letters::-webkit-scrollbar-thumb { border-radius: 4px; background: var(--border-strong); }
 .letter {
-  min-height: 36px; padding: 0;
+  flex: none; width: 38px; min-height: 38px; padding: 0; scroll-snap-align: start;
   border: 1px solid var(--border); border-radius: 8px;
   background: var(--field); color: var(--muted);
   font: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer;
 }
-.letter.all { grid-column: span 2; }
+.letter.all { width: auto; padding: 0 0.85rem; }
 .letter:hover { color: #fff; border-color: var(--border-strong); }
 .letter.active { border-color: var(--cyan); background: var(--cyan-soft); color: #fff; box-shadow: 0 0 10px rgba(72, 214, 255, 0.35); }
-@media (min-width: 860px) { .letters { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); } }
 
 /* ---------- QR code peserta ---------- */
 .qr { flex: none; padding: 10px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px var(--border-strong), 0 10px 30px rgba(2, 10, 40, 0.45); box-sizing: content-box; }
