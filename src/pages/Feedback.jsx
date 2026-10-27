@@ -132,7 +132,8 @@ export default function Feedback() {
   )
 }
 
-function FeedbackHeader() {
+// Dipakai juga oleh halaman registrasi
+export function FeedbackHeader() {
   const { lang, setLang } = useLang()
   return (
     <header className="fb-header">

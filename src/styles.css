@@ -744,6 +744,18 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .fb-cert img { display: block; width: 100%; height: auto; aspect-ratio: 2000 / 1414; }
 .fb-cert .fb-hint { padding: 3rem 1rem; color: var(--ocean-1); }
 
+/* Registrasi peserta (/register) */
+.rg-field { display: grid; gap: 0.35rem; font-weight: 600; font-size: 0.85rem; color: var(--muted); }
+.rg-phone { display: grid; grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); gap: 0.5rem; }
+.rg-phone select { min-width: 0; }
+.rg-preview { color: var(--faint); font-size: 0.78rem; font-weight: 500; }
+.rg-preview b { color: var(--muted); font-weight: 700; }
+.rg-opt { color: var(--faint); font-style: normal; font-weight: 500; }
+.rg-two { display: grid; gap: 1.1rem; }
+.rg-attendance { grid-template-columns: repeat(2, 1fr); }
+.rg-data { width: 100%; margin: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: rgba(3, 16, 58, 0.45); text-align: left; }
+.rg-yes { color: #8ff0bf; font-weight: 700; }
+
 /* Status feedback di riwayat peserta */
 .feedback-status { display: grid; gap: 0.2rem; margin: 0.5rem 0 1rem; padding: 0.75rem 0.9rem; border: 1px dashed var(--border-strong); border-radius: var(--r); color: var(--muted); font-size: 0.9rem; }
 .feedback-status.done { border-style: solid; border-color: rgba(22, 178, 106, 0.6); background: rgba(22, 178, 106, 0.12); color: #8ff0bf; font-weight: 700; }
@@ -751,4 +763,6 @@ dd { margin: 0; overflow-wrap: anywhere; }
 
 @media (min-width: 640px) {
   .fb-card { padding: 2rem; }
+  .rg-two { grid-template-columns: 1fr 1fr; }
+  .rg-phone { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
 }

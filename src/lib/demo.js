@@ -360,7 +360,7 @@ class Query {
 const DEFAULTS = {
   participants: (now) => ({
     qr_code: uid().replace(/-/g, '').slice(0, 10),
-    updated_at: now, organization: null, division: null, job_title: null, email: null, phone: null, category: null,
+    updated_at: now, organization: null, division: null, job_title: null, email: null, phone: null, category: null, attendance: null,
   }),
 }
 
@@ -460,6 +460,31 @@ const RPC = {
       db.feedback.push(fb)
     }
     return feedbackDone(p, fb)
+  },
+
+  register_participant({ p_full_name, p_email, p_phone, p_attendance, p_organization, p_division, p_job_title }) {
+    const text = (v) => String(v ?? '').trim()
+    const name = text(p_full_name)
+    const email = text(p_email).toLowerCase()
+    const phone = String(p_phone ?? '').replace(/[^0-9+]/g, '')
+    const extra = { organization: text(p_organization), division: text(p_division), job_title: text(p_job_title) }
+    if (
+      !name || name.length > 200 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 200 ||
+      !/^\+[1-9][0-9]{6,14}$/.test(phone) || !['attend', 'absent'].includes(p_attendance) ||
+      Object.values(extra).some((v) => v.length > 200)
+    ) throw new Error('Data registrasi tidak valid')
+    if (participantByEmail(email)) return { status: 'already_registered' }
+    const now = new Date().toISOString()
+    const p = {
+      id: uid(), created_at: now, ...DEFAULTS.participants(now), full_name: name, email, phone, category: 'Umum', attendance: p_attendance,
+      organization: extra.organization || null, division: extra.division || null, job_title: extra.job_title || null,
+    }
+    checkConstraints('participants', p)
+    db.participants.push(p)
+    return {
+      status: 'ok', qr_code: p.qr_code, name: p.full_name, email: p.email, phone: p.phone, organization: p.organization,
+      division: p.division, job_title: p.job_title, attendance: p.attendance, registered_at: p.created_at,
+    }
   },
 }
 
