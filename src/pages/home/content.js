@@ -297,8 +297,8 @@ export const PROGRAMME = [
       { time: '09:40 – 10:40', title: 'From Risk to Resilience: Strengthening Maritime Security Through Integrated HSSE Governance', speakers: ['ade'] },
       { time: '10:40 – 11:40', title: 'From Intelligence to Decision-Ready Risk: Introducing GRID for Maritime Security Assessment', speakers: ['andreas'] },
       { time: '13:10 – 14:10', title: 'Securing Indonesia’s Energy at Sea: Building Maritime Security Resilience through Integrated Stakeholder Collaboration', speakers: ['indarto'] },
-      { time: '14:10 – 15:10', title: 'Peran TNI AL dalam Maritime Domain Awareness Guna Mewujudkan Ketahanan Energi Nasional', speakers: ['awang'] },
-      { time: '15:10 – 16:10', title: 'Managing Stress, Fatigue & Human Factors in Maritime Work', speakers: ['arienda'] },
+      { time: '14:10 – 15:10', title: 'Managing Stress, Fatigue & Human Factors in Maritime Work', speakers: ['arienda'] },
+      { time: '15:10 – 16:10', title: 'Peran TNI AL dalam Maritime Domain Awareness Guna Mewujudkan Ketahanan Energi Nasional', speakers: ['awang'] },
     ],
   },
   {
