@@ -62,7 +62,7 @@ export default function Scan() {
   const approve = useCallback(
     (res, cp) => {
       if (res?.status === 'ok') {
-        setToast({ id: Date.now(), name: res.participant?.name, checkpoint: res.checkpoint || cp?.name, kind: cp?.kind })
+        setToast({ id: Date.now(), name: res.participant?.name, category: res.participant?.category, checkpoint: res.checkpoint || cp?.name, kind: cp?.kind })
       }
       dismiss()
     },
@@ -180,6 +180,7 @@ export default function Scan() {
           <div>
             <b>{tr('Check-in berhasil', 'Check-in successful')}</b>
             <strong>{toast.name}</strong>
+            {toast.category && <span className="scan-toast-cat">{toast.category}</span>}
             <span className="scan-toast-cp">
               <KindIcon kind={toast.kind} size="sm" plain />
               {toast.checkpoint}
@@ -238,7 +239,10 @@ function ResultOverlay({ result, checkpoint, onClose }) {
           <>
             <h2 className="overlay-name">{p.name}</h2>
             {p.organization && <p className="overlay-org">{p.organization}</p>}
-            {p.category && <p className="overlay-cat">{p.category}</p>}
+            <p className="overlay-cat">
+              <span>{tr('Kategori', 'Category')}</span>
+              <b>{p.category || tr('Belum diisi', 'Not set')}</b>
+            </p>
           </>
         )}
         {detail && <p className="overlay-detail">{detail}</p>}

@@ -83,7 +83,7 @@ function seed() {
     ['5c61818ba6', 'Sigit Wibowo', 'TNI AL', 'Umum'],
   ]
   const participants = people.map(([qr_code, full_name, organization, category]) => ({
-    id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, phone: null,
+    id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, phone: null, attendance: null,
     // Email contoh untuk mencoba halaman /feedback, mis. agus.wijaya@contoh.id
     email: `${full_name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '')}@contoh.id`,
     created_at: ago(3000), updated_at: ago(3000),
