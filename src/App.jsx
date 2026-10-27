@@ -16,6 +16,7 @@ import Checkpoints from './pages/admin/Checkpoints.jsx'
 import Staff from './pages/admin/Staff.jsx'
 import Home from './pages/home/Home.jsx'
 import Feedback from './pages/Feedback.jsx'
+import Register from './pages/Register.jsx'
 import { tr, useLang } from './lib/i18n.jsx'
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/p/:code" element={<ParticipantHistory />} />
             <Route path="/feedback" element={<Feedback />} />
+            <Route path="/register" element={<Register />} />
             <Route
               element={
                 <RequireRole roles={['admin', 'officer']}>

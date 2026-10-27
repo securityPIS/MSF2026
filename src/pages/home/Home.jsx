@@ -245,6 +245,7 @@ function Header() {
           </a>
           <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
             {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
+            <Link to="/register">{tr('Registrasi', 'Register')}</Link>
             <Link to="/feedback">Feedback</Link>
           </nav>
           <div className="lp-header-actions">
@@ -270,6 +271,10 @@ function Header() {
               <Icon name="arrow" size={18} />
             </a>
           ))}
+          <Link to="/register">
+            {tr('Registrasi peserta', 'Participant registration')}
+            <Icon name="arrow" size={18} />
+          </Link>
           <Link to="/feedback">
             {tr('Feedback & sertifikat', 'Feedback & certificate')}
             <Icon name="arrow" size={18} />
@@ -343,9 +348,12 @@ function Hero() {
           </p>
           <p className="lp-lead">{L(INTRO)}</p>
           <div className="lp-hero-cta">
-            <a className="lp-btn lp-btn-primary lp-btn-lg" href="#programme">
-              {tr('Lihat agenda', 'View programme')}
+            <Link className="lp-btn lp-btn-primary lp-btn-lg" to="/register">
+              {tr('Daftar sekarang', 'Register now')}
               <Icon name="arrow" size={18} />
+            </Link>
+            <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#programme">
+              {tr('Lihat agenda', 'View programme')}
             </a>
             <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#speakers">
               {tr('Lihat pembicara', 'Meet the speakers')}
@@ -757,6 +765,7 @@ function Footer() {
         </div>
         <nav aria-label={tr('Tautan footer', 'Footer links')}>
           {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
+          <Link to="/register">{tr('Registrasi', 'Register')}</Link>
           <Link to="/feedback">Feedback</Link>
         </nav>
         <div className="lp-footer-cta">

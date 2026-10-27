@@ -395,6 +395,7 @@ function ParticipantDetail({ id, canCancel, onBack }) {
             <div><dt>Department</dt><dd>{p.division || '-'}</dd></div>
             <div><dt>Job Title</dt><dd>{p.job_title || '-'}</dd></div>
             <div><dt>{tr('Kategori', 'Category')}</dt><dd>{p.category || '-'}</dd></div>
+            <div><dt>{tr('Kehadiran', 'Attendance')}</dt><dd>{p.attendance === 'attend' ? tr('Hadir', 'Attending') : p.attendance === 'absent' ? tr('Tidak hadir', 'Not attending') : '-'}</dd></div>
             <div><dt>Email</dt><dd>{p.email || '-'}</dd></div>
             <div><dt>{tr('Telepon', 'Phone')}</dt><dd>{p.phone || '-'}</dd></div>
             <div><dt>Unique ID</dt><dd><code>{p.qr_code}</code></dd></div>

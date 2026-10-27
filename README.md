@@ -8,6 +8,7 @@ Stack: React 18 + Vite, Supabase (Auth, Postgres, Realtime), html5-qrcode, Sheet
 ## Peran
 
 - **Publik**: landing page acara di `/` (manfaat, agenda dua hari, profil 16 pembicara, partner, lokasi dan rute, FAQ, dan grup WhatsApp komunitas). Isi diambil dari maritimesecurityforum.com, ada di `src/pages/home/content.js`, gambar di `public/landing/`. Tombol "Masuk petugas" membuka `/login`; setelah masuk, petugas diarahkan lewat `/app` ke halaman kerjanya.
+- **Registrasi peserta**: peserta membuka `/register` (tombol "Daftar sekarang" di landing page), mengisi nama, email, nomor telepon dengan pilihan kode negara (disimpan dalam format internasional, mis. `+6281234567890`), Company, Department, Job Title, dan konfirmasi kehadiran (Hadir/Tidak hadir). Setelah kirim, tampil ucapan terima kasih, data dirinya, dan QR code (bisa diunduh sebagai kartu PNG). Data langsung masuk ke tabel peserta dengan kategori Umum; kehadiran tampil di detail peserta (admin). Satu registrasi per email; email yang sudah terdaftar ditolak tanpa menampilkan QR lama.
 - **Feedback & sertifikat**: peserta membuka `/feedback`, memasukkan email yang terdaftar, mengisi feedback, lalu mengunduh sertifikat keikutsertaan (PNG). Satu feedback per peserta; statusnya tampil di detail peserta (admin) dan di riwayat `/p/<kode-qr>`. Pertanyaan masih contoh, ada di `src/pages/Feedback.jsx`.
 - **Admin**: semua yang bisa dilakukan petugas, ditambah impor peserta dari Excel, kelola checkpoint dan peran petugas (lewat ikon pengaturan di kanan atas), batalkan check-in, reset semua check-in per checkpoint dari Monitoring.
 - **Petugas**: pilih checkpoint, scan QR, lihat hasil validasi (hijau berhasil, kuning sudah pernah, merah ditolak) lalu tekan Approve untuk scan berikutnya (ada tanda koneksi; saat internet putus, scan ditolak dengan jelas, bukan diam-diam hilang), lihat Monitoring (data real-time), unduh laporan Excel, cari peserta dan riwayat check-in-nya, tambah peserta baru (isi Unique ID yang tertulis di QR peserta, atau kosongkan supaya dibuat otomatis; QR bisa diunduh sebagai kartu PNG).
@@ -49,6 +50,7 @@ Butuh Node.js 18 atau lebih baru.
    Database yang dibuat sebelum ada kolom Department (division) dan Job Title: jalankan juga
    `supabase/migrations/20261024000000_participant_division_job_title.sql`.
    Untuk fitur feedback dan sertifikat, jalankan juga `supabase/migrations/20261026000000_feedback.sql`.
+   Untuk halaman registrasi peserta, jalankan juga `supabase/migrations/20261027000000_registration.sql`.
 3. Buat akun admin: **Authentication > Users > Add user** (centang *Auto Confirm User*). Lalu di SQL Editor:
    ```sql
    update public.profiles set role = 'admin' where email = 'email-admin@contoh.com';
@@ -116,6 +118,7 @@ supabase/seed.sql        checkpoint awal + peserta uji
 src/pages/Scan.jsx       scanner petugas + layar hasil
 src/pages/admin/*        monitoring (Dashboard.jsx), peserta, impor, checkpoint, petugas
 src/pages/ParticipantHistory.jsx   halaman publik peserta
+src/pages/Register.jsx   registrasi peserta publik (/register), kode negara di src/lib/countries.js
 src/pages/home/*         landing page acara (isi di content.js)
 ```
 
