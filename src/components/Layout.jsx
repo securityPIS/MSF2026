@@ -35,13 +35,13 @@ export default function Layout() {
   return (
     <div className={`shell ${links.length > 1 ? 'has-tabs' : ''}`}>
       <header className="topbar">
-        <div className="brand">
+        <Link className="brand" to="/" aria-label={tr('MSF 2026, ke halaman utama', 'MSF 2026, go to the home page')}>
           <BrandMark size={34} />
           <div className="brand-text">
             <span className="brand-name">MSF 2026</span>
             <span className="brand-sub">Checkpoint</span>
           </div>
-        </div>
+        </Link>
         {links.length > 1 && (
           <nav className="tabs" aria-label={tr('Menu utama', 'Main menu')}>
             {links.map((l) => (
