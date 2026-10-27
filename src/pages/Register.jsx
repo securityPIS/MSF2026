@@ -5,7 +5,7 @@ import { tr } from '../lib/i18n.jsx'
 import { COUNTRIES, toInternational, validPhone } from '../lib/countries.js'
 import QrCode, { downloadQrCard } from '../components/QrCode.jsx'
 import { FeedbackHeader } from './Feedback.jsx'
-import { useRegistrationOpen } from '../lib/registration.js'
+import { useAppSwitch } from '../lib/settings.js'
 import { EVENT } from './home/content.js'
 
 const EMPTY = { full_name: '', email: '', country: 'ID', phone: '', organization: '', division: '', job_title: '', attendance: '' }
@@ -40,7 +40,7 @@ export default function Register() {
   const [saved] = useState(readState)
   const [form, setForm] = useState(saved.form ?? EMPTY)
   const [result, setResult] = useState(saved.result ?? null)
-  const { open, markClosed } = useRegistrationOpen()
+  const { on: open, markOff: markClosed } = useAppSwitch('registration')
 
   useEffect(() => {
     try {
