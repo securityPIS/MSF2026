@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import { tr } from '../lib/i18n.jsx'
 
-const QR_OPTS = { errorCorrectionLevel: 'M', margin: 1, color: { dark: '#03103a', light: '#ffffff' } }
+export const QR_OPTS = { errorCorrectionLevel: 'M', margin: 1, color: { dark: '#03103a', light: '#ffffff' } }
 
 // Gambar QR untuk ditampilkan di layar
 export default function QrCode({ code, size = 200 }) {
