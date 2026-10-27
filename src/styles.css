@@ -323,6 +323,9 @@ section > h2::before, .section-head > h2::before { content: ''; width: 4px; heig
 .detail { padding: 1.1rem; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); }
 .detail.empty { display: none; }
 /* Baris atas detail: tombol kembali (HP) sejajar dengan tab Info / Riwayat */
+.detail-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; margin-bottom: 0.9rem; }
+.detail-title h2 { margin: 0; }
+.edit-form { margin-bottom: 0; }
 .detail-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.9rem; }
 .detail-back { flex: none; }
 .detail-tabs { flex: 0 1 260px; }
@@ -434,6 +437,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .scan-toast > div { display: grid; gap: 0.1rem; min-width: 0; }
 .scan-toast b { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.9; }
 .scan-toast strong { font-size: 1.15rem; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+.scan-toast-cat { justify-self: start; padding: 0.05rem 0.55rem; border-radius: 999px; background: rgba(255, 255, 255, 0.22); font-size: 0.8rem; font-weight: 800; }
 .scan-toast-cp { display: flex; align-items: center; gap: 0.35rem; font-size: 0.88rem; font-weight: 600; }
 .scan-toast-check { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); font-size: 1.3rem; font-weight: 800; }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -457,7 +461,9 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .overlay-status { margin: 0; font-size: 1rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .overlay-name { margin: 0.25rem 0 0; font-size: clamp(2.2rem, 11vw, 4rem); font-weight: 800; line-height: 1; overflow-wrap: anywhere; text-transform: none; }
 .overlay-org { margin: 0; font-size: 1.15rem; font-weight: 600; }
-.overlay-cat { margin: 0; opacity: 0.85; }
+.overlay-cat { display: inline-flex; align-items: center; gap: 0.5rem; justify-self: start; margin: 0.35rem 0 0; padding: 0.35rem 0.85rem 0.35rem 0.6rem; border: 2px solid currentColor; border-radius: 999px; background: rgba(255, 255, 255, 0.14); }
+.overlay-cat span { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+.overlay-cat b { font-size: 1.3rem; font-weight: 800; }
 .overlay-detail { margin: 0.75rem 0 0; font-size: 1.05rem; font-weight: 500; }
 .overlay-cp { margin: 1rem 0 0; padding-top: 0.75rem; border-top: 1px solid currentColor; opacity: 0.85; font-weight: 600; }
 .overlay-btn { margin-top: 1rem; min-height: 54px; padding: 0.9rem; border: 2px solid currentColor; border-radius: var(--r); background: rgba(255, 255, 255, 0.12); color: inherit; font-size: 1.05rem; font-weight: 800; cursor: pointer; }

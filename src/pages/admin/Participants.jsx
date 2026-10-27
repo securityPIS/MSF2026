@@ -170,7 +170,7 @@ export default function Participants() {
             <Pager page={page} total={total ?? 0} pageSize={PAGE} onChange={(n) => { setPage(n); window.scrollTo({ top: 0 }) }} />
           </div>
           {selected ? (
-            <ParticipantDetail key={selected} id={selected} canCancel={isAdmin} canDelete={isAdmin} onBack={() => setSelected(null)} onDeleted={onDeleted} />
+            <ParticipantDetail key={selected} id={selected} canCancel={isAdmin} canManage={isAdmin} onBack={() => setSelected(null)} onDeleted={onDeleted} onSaved={() => setReload((n) => n + 1)} />
           ) : (
             <div className="detail empty">{tr('Pilih peserta untuk melihat QR code, lokasi, dan waktu check-in.', 'Choose a participant to see their QR code, check-in locations, and times.')}</div>
           )}
@@ -321,12 +321,13 @@ function CreatedCard({ p, onAgain, onOpen, onClose }) {
   )
 }
 
-function ParticipantDetail({ id, canCancel, canDelete, onBack, onDeleted }) {
+function ParticipantDetail({ id, canCancel, canManage, onBack, onDeleted, onSaved }) {
   const [p, setP] = useState(null)
   const [checkins, setCheckins] = useState([])
   const [feedback, setFeedback] = useState(undefined) // undefined = tabel feedback belum ada / gagal dimuat
   const [error, setError] = useState('')
   const [tab, setTab] = useState('info')
+  const [editing, setEditing] = useState(false)
   const confirm = useConfirm()
 
   const load = useCallback(async () => {
@@ -408,9 +409,22 @@ function ParticipantDetail({ id, canCancel, canDelete, onBack, onDeleted }) {
           ))}
         </div>
       </div>
-      <h2>{p.full_name}</h2>
+      <div className="detail-title">
+        <h2>{p.full_name}</h2>
+        {canManage && tab === 'info' && !editing && <button className="btn" onClick={() => setEditing(true)}>{tr('Edit data', 'Edit details')}</button>}
+      </div>
 
-      {tab === 'info' ? (
+      {tab === 'info' && editing ? (
+        <EditParticipant
+          p={p}
+          onCancel={() => setEditing(false)}
+          onSaved={async () => {
+            await load()
+            setEditing(false)
+            onSaved()
+          }}
+        />
+      ) : tab === 'info' ? (
         <div id="pd-panel-info" role="tabpanel" aria-labelledby="pd-tab-info">
           <dl>
             <div><dt>Company</dt><dd>{p.organization || '-'}</dd></div>
@@ -434,7 +448,7 @@ function ParticipantDetail({ id, canCancel, canDelete, onBack, onDeleted }) {
             {tr('Link riwayat untuk peserta:', 'History link for the participant:')} <a href={link} target="_blank" rel="noreferrer">{link}</a>
           </p>
 
-          {canDelete && (
+          {canManage && (
             <div className="detail-danger">
               {error && <p className="notice error">{error}</p>}
               <button className="btn btn-danger" onClick={remove}>{tr('Hapus peserta', 'Delete participant')}</button>
@@ -479,5 +493,85 @@ function ParticipantDetail({ id, canCancel, canDelete, onBack, onDeleted }) {
         </div>
       )}
     </div>
+  )
+}
+
+const EDIT_FIELDS = ['full_name', 'organization', 'division', 'job_title', 'category', 'attendance', 'email', 'phone']
+
+// Ubah data peserta (admin). Unique ID tidak bisa diubah supaya QR yang sudah dibagikan atau dicetak tetap berlaku.
+function EditParticipant({ p, onCancel, onSaved }) {
+  // Kolom kehadiran baru ada setelah migrasi registrasi dijalankan; sebelum itu tidak ikut dikirim
+  const fields = EDIT_FIELDS.filter((k) => k in p)
+  const [f, setF] = useState(() => Object.fromEntries(fields.map((k) => [k, p[k] ?? ''])))
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
+
+  async function save(e) {
+    e.preventDefault()
+    const payload = { updated_at: new Date().toISOString() }
+    // Isian yang dikosongkan disimpan sebagai null, sama seperti saat tambah peserta
+    for (const k of fields) payload[k] = String(f[k]).trim() || null
+    if (!payload.full_name) return setError(tr('Nama lengkap wajib diisi.', 'Full name is required.'))
+    setBusy(true)
+    setError('')
+    const { error } = await supabase.from('participants').update(payload).eq('id', p.id)
+    setBusy(false)
+    if (error) return setError(tr(`Perubahan gagal disimpan: ${error.message}`, `Could not save the changes: ${error.message}`))
+    onSaved()
+  }
+
+  return (
+    <form className="form-grid edit-form" onSubmit={save}>
+      <label className="full">
+        {tr('Nama lengkap (wajib)', 'Full name (required)')}
+        <input required autoFocus value={f.full_name} onChange={(e) => set('full_name', e.target.value)} />
+      </label>
+      <label className="full">
+        Company
+        <input value={f.organization} onChange={(e) => set('organization', e.target.value)} />
+      </label>
+      <label>
+        Department
+        <input value={f.division} onChange={(e) => set('division', e.target.value)} />
+      </label>
+      <label>
+        Job Title
+        <input value={f.job_title} onChange={(e) => set('job_title', e.target.value)} />
+      </label>
+      <label>
+        {tr('Kategori', 'Category')}
+        <input list="participant-categories-edit" value={f.category} onChange={(e) => set('category', e.target.value)} />
+        <datalist id="participant-categories-edit">
+          {CATEGORIES.map((c) => <option key={c} value={c} />)}
+        </datalist>
+      </label>
+      {'attendance' in f && (
+        <label>
+          {tr('Kehadiran', 'Attendance')}
+          <select value={f.attendance} onChange={(e) => set('attendance', e.target.value)}>
+            <option value="">-</option>
+            <option value="attend">{tr('Hadir', 'Attending')}</option>
+            <option value="absent">{tr('Tidak hadir', 'Not attending')}</option>
+          </select>
+        </label>
+      )}
+      <label>
+        Email
+        <input type="email" inputMode="email" autoCapitalize="none" value={f.email} onChange={(e) => set('email', e.target.value)} />
+      </label>
+      <label>
+        {tr('Telepon', 'Phone')}
+        <input type="tel" inputMode="tel" value={f.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+62…" />
+      </label>
+      <p className="hint full">
+        Unique ID <code>{p.qr_code}</code> {tr('tidak bisa diubah supaya QR code peserta tetap berlaku.', 'cannot be changed, so the participant’s QR code keeps working.')}
+      </p>
+      {error && <p className="form-error full" role="alert">{error}</p>}
+      <div className="form-actions">
+        <button type="button" className="btn" onClick={onCancel}>{tr('Batal', 'Cancel')}</button>
+        <button className="btn btn-primary" disabled={busy}>{busy ? tr('Menyimpan…', 'Saving…') : tr('Simpan perubahan', 'Save changes')}</button>
+      </div>
+    </form>
   )
 }
