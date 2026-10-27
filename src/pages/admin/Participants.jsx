@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import { supabase } from '../../lib/supabase.js'
 import { cleanTerm, formatTime } from '../../lib/format.js'
 import KindIcon from '../../components/KindIcon.jsx'
@@ -8,7 +9,7 @@ import QrCode, { downloadQrCard } from '../../components/QrCode.jsx'
 import { useAuth } from '../../lib/auth.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import { canAddParticipants } from '../../lib/permissions.js'
-import { tr } from '../../lib/i18n.jsx'
+import { locale, tr } from '../../lib/i18n.jsx'
 
 const PAGE = 5
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
@@ -27,6 +28,8 @@ export default function Participants() {
   const [adding, setAdding] = useState(false)
   const [created, setCreated] = useState(null)
   const [reload, setReload] = useState(0)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
 
   useEffect(() => {
     let cancelled = false // jawaban lama tidak boleh menimpa hasil saringan yang lebih baru
@@ -83,6 +86,43 @@ export default function Participants() {
     window.scrollTo({ top: 0 })
   }
 
+  // Semua peserta ke Excel. Judul kolom sama dengan yang dikenali Impor, jadi file bisa diedit lalu diimpor ulang.
+  async function exportExcel() {
+    setExporting(true)
+    setExportError('')
+    const rows = []
+    const pageSize = 1000 // batas baris per permintaan Supabase
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase.from('participants').select('*').order('full_name').range(from, from + pageSize - 1)
+      if (error) {
+        setExporting(false)
+        return setExportError(tr(`Gagal mengunduh data peserta: ${error.message}`, `Could not download participant data: ${error.message}`))
+      }
+      rows.push(...data)
+      if (data.length < pageSize) break
+    }
+    const attendance = (v) => (v === 'attend' ? tr('Hadir', 'Attending') : v === 'absent' ? tr('Tidak hadir', 'Not attending') : '')
+    const sheet = XLSX.utils.json_to_sheet(
+      rows.map((p) => ({
+        'Unique ID': p.qr_code,
+        [tr('Nama', 'Name')]: p.full_name,
+        Company: p.organization ?? '',
+        Department: p.division ?? '',
+        'Job Title': p.job_title ?? '',
+        [tr('Kategori', 'Category')]: p.category ?? '',
+        [tr('Kehadiran', 'Attendance')]: attendance(p.attendance),
+        Email: p.email ?? '',
+        [tr('Telepon', 'Phone')]: p.phone ?? '',
+        [tr('Terdaftar', 'Added')]: new Date(p.created_at).toLocaleString(locale(), { timeZone: 'Asia/Jakarta' }),
+      }))
+    )
+    sheet['!cols'] = [12, 28, 28, 20, 20, 12, 12, 30, 18, 20].map((wch) => ({ wch }))
+    const book = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(book, sheet, tr('Peserta', 'Participants'))
+    XLSX.writeFile(book, `MSF2026-peserta-${new Date().toISOString().slice(0, 10)}.xlsx`)
+    setExporting(false)
+  }
+
   const empty = total === 0 && !q && !letter
 
   return (
@@ -96,9 +136,15 @@ export default function Participants() {
           <div className="actions">
             {canAdd && <button className="btn btn-primary" onClick={startAdd}>+ {tr('Tambah peserta', 'Add participant')}</button>}
             {isAdmin && <Link className="btn" to="/admin/import">{tr('Impor dari Excel', 'Import from Excel')}</Link>}
+            {isAdmin && (
+              <button className="btn" onClick={exportExcel} disabled={exporting || empty}>
+                {exporting ? tr('Menyiapkan…', 'Preparing…') : tr('Unduh Excel', 'Download Excel')}
+              </button>
+            )}
           </div>
         )}
       </div>
+      {exportError && <p className="notice error">{exportError}</p>}
 
       {adding && <AddParticipant onCancel={() => setAdding(false)} onCreated={onCreated} />}
       {created && (
