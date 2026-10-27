@@ -105,6 +105,7 @@ label.check { display: flex; align-items: center; gap: 0.6rem; color: var(--text
 .btn-primary:hover { background: linear-gradient(135deg, #4a8fff 0%, #2a6bff 55%, #1149dd 100%); }
 .btn-danger { border-color: rgba(229, 72, 77, 0.6); color: #ff9da0; }
 .btn-danger:hover { background: rgba(229, 72, 77, 0.15); }
+.detail-danger { display: grid; gap: 0.6rem; justify-items: start; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 .btn-ghost { min-height: 36px; padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.8rem; cursor: pointer; }
 .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
 .btn-link { background: none; border: 0; padding: 0; color: var(--cyan); font-weight: 600; text-decoration: underline; cursor: pointer; }
