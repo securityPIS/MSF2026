@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import * as XLSX from 'xlsx'
+import QRCode from 'qrcode'
 import { supabase } from '../../lib/supabase.js'
 import { cleanTerm, formatTime } from '../../lib/format.js'
 import KindIcon from '../../components/KindIcon.jsx'
 import Pager from '../../components/Pager.jsx'
-import QrCode, { downloadQrCard } from '../../components/QrCode.jsx'
+import QrCode, { QR_OPTS, downloadQrCard } from '../../components/QrCode.jsx'
 import { useAuth } from '../../lib/auth.jsx'
 import { useConfirm } from '../../components/ConfirmDialog.jsx'
 import { canAddParticipants } from '../../lib/permissions.js'
@@ -86,41 +86,74 @@ export default function Participants() {
     window.scrollTo({ top: 0 })
   }
 
-  // Semua peserta ke Excel. Judul kolom sama dengan yang dikenali Impor, jadi file bisa diedit lalu diimpor ulang.
+  // Semua peserta ke Excel, lengkap dengan gambar QR code per peserta. Judul kolom sama dengan yang dikenali Impor,
+  // jadi file bisa diedit lalu diimpor ulang (kolom gambar QR diabaikan saat impor).
   async function exportExcel() {
     setExporting(true)
     setExportError('')
-    const rows = []
-    const pageSize = 1000 // batas baris per permintaan Supabase
-    for (let from = 0; ; from += pageSize) {
-      const { data, error } = await supabase.from('participants').select('*').order('full_name').range(from, from + pageSize - 1)
-      if (error) {
-        setExporting(false)
-        return setExportError(tr(`Gagal mengunduh data peserta: ${error.message}`, `Could not download participant data: ${error.message}`))
+    try {
+      const rows = []
+      const pageSize = 1000 // batas baris per permintaan Supabase
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase.from('participants').select('*').order('full_name').range(from, from + pageSize - 1)
+        if (error) throw error
+        rows.push(...data)
+        if (data.length < pageSize) break
       }
-      rows.push(...data)
-      if (data.length < pageSize) break
+
+      // exceljs hanya dimuat saat dibutuhkan; SheetJS versi gratis tidak bisa menyisipkan gambar
+      const { default: ExcelJS } = await import('exceljs')
+      const book = new ExcelJS.Workbook()
+      const sheet = book.addWorksheet(tr('Peserta', 'Participants'), { views: [{ state: 'frozen', ySplit: 1 }] })
+      const QR_PX = 90
+      sheet.columns = [
+        { header: 'Unique ID', key: 'qr_code', width: 14 },
+        { header: 'QR Code', key: 'qr', width: 14 },
+        { header: tr('Nama', 'Name'), key: 'full_name', width: 28 },
+        { header: 'Company', key: 'organization', width: 28 },
+        { header: 'Department', key: 'division', width: 20 },
+        { header: 'Job Title', key: 'job_title', width: 20 },
+        { header: tr('Kategori', 'Category'), key: 'category', width: 12 },
+        { header: tr('Kehadiran', 'Attendance'), key: 'attendance', width: 13 },
+        { header: 'Email', key: 'email', width: 30 },
+        { header: tr('Telepon', 'Phone'), key: 'phone', width: 18 },
+        { header: tr('Terdaftar', 'Added'), key: 'created_at', width: 20 },
+      ]
+      sheet.getRow(1).font = { bold: true }
+      const attendance = (v) => (v === 'attend' ? tr('Hadir', 'Attending') : v === 'absent' ? tr('Tidak hadir', 'Not attending') : '')
+
+      for (const [i, p] of rows.entries()) {
+        const row = sheet.addRow({
+          qr_code: p.qr_code,
+          full_name: p.full_name,
+          organization: p.organization ?? '',
+          division: p.division ?? '',
+          job_title: p.job_title ?? '',
+          category: p.category ?? '',
+          attendance: attendance(p.attendance),
+          email: p.email ?? '',
+          phone: p.phone ?? '',
+          created_at: new Date(p.created_at).toLocaleString(locale(), { timeZone: 'Asia/Jakarta' }),
+        })
+        row.height = QR_PX * 0.75 + 6 // tinggi baris dalam poin
+        row.alignment = { vertical: 'middle' }
+        const png = await QRCode.toDataURL(p.qr_code, { ...QR_OPTS, width: QR_PX * 2 })
+        const image = book.addImage({ base64: png, extension: 'png' })
+        // Baris data mulai di indeks 1 (baris 0 = judul), kolom QR Code di indeks 1
+        sheet.addImage(image, { tl: { col: 1.08, row: i + 1.04 }, ext: { width: QR_PX, height: QR_PX }, editAs: 'oneCell' })
+      }
+
+      const buffer = await book.xlsx.writeBuffer()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
+      a.download = `MSF2026-peserta-${new Date().toISOString().slice(0, 10)}.xlsx`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+    } catch (error) {
+      setExportError(tr(`Gagal mengunduh data peserta: ${error.message}`, `Could not download participant data: ${error.message}`))
+    } finally {
+      setExporting(false)
     }
-    const attendance = (v) => (v === 'attend' ? tr('Hadir', 'Attending') : v === 'absent' ? tr('Tidak hadir', 'Not attending') : '')
-    const sheet = XLSX.utils.json_to_sheet(
-      rows.map((p) => ({
-        'Unique ID': p.qr_code,
-        [tr('Nama', 'Name')]: p.full_name,
-        Company: p.organization ?? '',
-        Department: p.division ?? '',
-        'Job Title': p.job_title ?? '',
-        [tr('Kategori', 'Category')]: p.category ?? '',
-        [tr('Kehadiran', 'Attendance')]: attendance(p.attendance),
-        Email: p.email ?? '',
-        [tr('Telepon', 'Phone')]: p.phone ?? '',
-        [tr('Terdaftar', 'Added')]: new Date(p.created_at).toLocaleString(locale(), { timeZone: 'Asia/Jakarta' }),
-      }))
-    )
-    sheet['!cols'] = [12, 28, 28, 20, 20, 12, 12, 30, 18, 20].map((wch) => ({ wch }))
-    const book = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(book, sheet, tr('Peserta', 'Participants'))
-    XLSX.writeFile(book, `MSF2026-peserta-${new Date().toISOString().slice(0, 10)}.xlsx`)
-    setExporting(false)
   }
 
   const empty = total === 0 && !q && !letter
