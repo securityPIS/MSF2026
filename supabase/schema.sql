@@ -355,6 +355,39 @@ begin
                             'submitted_at', v_f.submitted_at);
 end $$;
 
+-- ---------- Pengaturan aplikasi & registrasi peserta ----------
+-- Pengaturan aplikasi yang diubah admin dari menu pengaturan (ikon gerigi), mis. buka/tutup registrasi.
+-- Dibaca dan diubah hanya lewat fungsi di bawah, jadi tabelnya tidak punya policy.
+create table if not exists public.app_settings (
+  key         text primary key,
+  value       jsonb not null,
+  updated_at  timestamptz not null default now(),
+  updated_by  uuid references public.profiles(id) on delete set null
+);
+alter table public.app_settings enable row level security;
+insert into public.app_settings (key, value) values ('registration_open', 'true') on conflict (key) do nothing;
+
+-- Status registrasi untuk halaman publik (landing page dan /register)
+create or replace function public.registration_open()
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select (value)::text::boolean from public.app_settings where key = 'registration_open'), true)
+$$;
+
+-- Buka/tutup registrasi, khusus admin
+create or replace function public.set_registration_open(p_open boolean)
+returns boolean
+language plpgsql volatile security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Hanya admin yang boleh mengubah status registrasi' using errcode = '42501';
+  end if;
+  insert into public.app_settings (key, value, updated_at, updated_by)
+  values ('registration_open', to_jsonb(coalesce(p_open, true)), now(), auth.uid())
+  on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at, updated_by = excluded.updated_by;
+  return coalesce(p_open, true);
+end $$;
+
 -- ---------- Registrasi peserta (halaman publik /register, tanpa login) ----------
 -- Langsung menambah peserta (kategori Umum) dan mengembalikan kode QR-nya. Satu registrasi per email.
 create or replace function public.register_participant(
@@ -371,6 +404,11 @@ declare
   v_job   text := nullif(btrim(coalesce(p_job_title, '')), '');
   v_p public.participants%rowtype;
 begin
+  -- Admin bisa menutup registrasi dari menu pengaturan aplikasi
+  if not public.registration_open() then
+    return jsonb_build_object('status', 'closed');
+  end if;
+
   if v_name = '' or length(v_name) > 200
      or v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' or length(v_email) > 200
      or v_phone !~ '^\+[1-9][0-9]{6,14}$'
@@ -414,6 +452,10 @@ revoke execute on function public.feedback_lookup(text) from public;
 revoke execute on function public.submit_feedback(text, jsonb) from public;
 grant  execute on function public.feedback_lookup(text) to anon, authenticated;
 grant  execute on function public.submit_feedback(text, jsonb) to anon, authenticated;
+revoke execute on function public.registration_open() from public;
+grant  execute on function public.registration_open() to anon, authenticated;
+revoke execute on function public.set_registration_open(boolean) from public, anon;
+grant  execute on function public.set_registration_open(boolean) to authenticated;
 revoke execute on function public.register_participant(text, text, text, text, text, text, text) from public;
 grant  execute on function public.register_participant(text, text, text, text, text, text, text) to anon, authenticated;
 

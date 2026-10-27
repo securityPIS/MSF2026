@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { tr, useLang } from '../../lib/i18n.jsx'
+import { useRegistrationOpen } from '../../lib/registration.js'
 import { useAuth } from '../../lib/auth.jsx'
 import BrandMark from '../../components/BrandMark.jsx'
 import {
@@ -146,6 +147,8 @@ function Icon({ name, size = 20 }) {
 
 export default function Home() {
   const [speaker, setSpeaker] = useState(null)
+  // Tombol dan link registrasi hanya tampil saat admin membuka registrasi (disembunyikan selama status dimuat)
+  const registrationOpen = useRegistrationOpen().open === true
 
   useEffect(() => {
     const prev = document.title
@@ -158,9 +161,9 @@ export default function Home() {
   return (
     <div className="lp">
       <a className="lp-skip" href="#main">{tr('Lewati ke konten', 'Skip to content')}</a>
-      <Header />
+      <Header registrationOpen={registrationOpen} />
       <main id="main">
-        <Hero />
+        <Hero registrationOpen={registrationOpen} />
         <Gains />
         <Programme onSpeaker={setSpeaker} />
         <Speakers onSpeaker={setSpeaker} />
@@ -170,7 +173,7 @@ export default function Home() {
         <Faq />
         <Community />
       </main>
-      <Footer />
+      <Footer registrationOpen={registrationOpen} />
       <SpeakerDialog speakerKey={speaker} onClose={() => setSpeaker(null)} />
     </div>
   )
@@ -201,7 +204,7 @@ function LangSwitch() {
   )
 }
 
-function Header() {
+function Header({ registrationOpen }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [menuTop, setMenuTop] = useState(0)
@@ -245,7 +248,7 @@ function Header() {
           </a>
           <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
             {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
-            <Link to="/register">{tr('Registrasi', 'Register')}</Link>
+            {registrationOpen && <Link to="/register">{tr('Registrasi', 'Register')}</Link>}
             <Link to="/feedback">Feedback</Link>
           </nav>
           <div className="lp-header-actions">
@@ -271,10 +274,12 @@ function Header() {
               <Icon name="arrow" size={18} />
             </a>
           ))}
-          <Link to="/register">
-            {tr('Registrasi peserta', 'Participant registration')}
-            <Icon name="arrow" size={18} />
-          </Link>
+          {registrationOpen && (
+            <Link to="/register">
+              {tr('Registrasi peserta', 'Participant registration')}
+              <Icon name="arrow" size={18} />
+            </Link>
+          )}
           <Link to="/feedback">
             {tr('Feedback & sertifikat', 'Feedback & certificate')}
             <Icon name="arrow" size={18} />
@@ -327,7 +332,7 @@ function Countdown() {
   )
 }
 
-function Hero() {
+function Hero({ registrationOpen }) {
   const sessions = PROGRAMME.reduce((n, d) => n + d.sessions.length, 0)
   return (
     <section className="lp-hero" id="top">
@@ -348,12 +353,15 @@ function Hero() {
           </p>
           <p className="lp-lead">{L(INTRO)}</p>
           <div className="lp-hero-cta">
-            <Link className="lp-btn lp-btn-primary lp-btn-lg" to="/register">
-              {tr('Daftar sekarang', 'Register now')}
-              <Icon name="arrow" size={18} />
-            </Link>
-            <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#programme">
+            {registrationOpen && (
+              <Link className="lp-btn lp-btn-primary lp-btn-lg" to="/register">
+                {tr('Daftar sekarang', 'Register now')}
+                <Icon name="arrow" size={18} />
+              </Link>
+            )}
+            <a className={`lp-btn lp-btn-${registrationOpen ? 'ghost' : 'primary'} lp-btn-lg`} href="#programme">
               {tr('Lihat agenda', 'View programme')}
+              {!registrationOpen && <Icon name="arrow" size={18} />}
             </a>
             <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#speakers">
               {tr('Lihat pembicara', 'Meet the speakers')}
@@ -744,7 +752,7 @@ function Community() {
   )
 }
 
-function Footer() {
+function Footer({ registrationOpen }) {
   return (
     <footer className="lp-footer">
       <div className="lp-wrap lp-footer-grid">
@@ -765,7 +773,7 @@ function Footer() {
         </div>
         <nav aria-label={tr('Tautan footer', 'Footer links')}>
           {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
-          <Link to="/register">{tr('Registrasi', 'Register')}</Link>
+          {registrationOpen && <Link to="/register">{tr('Registrasi', 'Register')}</Link>}
           <Link to="/feedback">Feedback</Link>
         </nav>
         <div className="lp-footer-cta">
