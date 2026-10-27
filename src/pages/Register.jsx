@@ -5,6 +5,8 @@ import { tr } from '../lib/i18n.jsx'
 import { COUNTRIES, toInternational, validPhone } from '../lib/countries.js'
 import QrCode, { downloadQrCard } from '../components/QrCode.jsx'
 import { FeedbackHeader } from './Feedback.jsx'
+import { useRegistrationOpen } from '../lib/registration.js'
+import { EVENT } from './home/content.js'
 
 const EMPTY = { full_name: '', email: '', country: 'ID', phone: '', organization: '', division: '', job_title: '', attendance: '' }
 const ATTENDANCE = [
@@ -38,6 +40,7 @@ export default function Register() {
   const [saved] = useState(readState)
   const [form, setForm] = useState(saved.form ?? EMPTY)
   const [result, setResult] = useState(saved.result ?? null)
+  const { open, markClosed } = useRegistrationOpen()
 
   useEffect(() => {
     try {
@@ -69,15 +72,21 @@ export default function Register() {
               setResult(null)
             }}
           />
+        ) : open === null ? (
+          <section className="fb-card">
+            <p className="fb-hint">{tr('Memuat…', 'Loading…')}</p>
+          </section>
+        ) : open ? (
+          <FormStep form={form} setForm={setForm} onDone={setResult} onClosed={markClosed} />
         ) : (
-          <FormStep form={form} setForm={setForm} onDone={setResult} />
+          <ClosedStep />
         )}
       </main>
     </div>
   )
 }
 
-function FormStep({ form, setForm, onDone }) {
+function FormStep({ form, setForm, onDone, onClosed }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [missingAttendance, setMissingAttendance] = useState(false)
@@ -110,6 +119,8 @@ function FormStep({ form, setForm, onDone }) {
     })
     setBusy(false)
     if (error) return setError(describeError(error))
+    // Admin menutup registrasi saat form masih terbuka
+    if (data?.status === 'closed') return onClosed()
     if (data?.status === 'already_registered') {
       return setError(
         tr(
@@ -221,6 +232,46 @@ function FormStep({ form, setForm, onDone }) {
       </button>
       <Link className="fb-back" to="/">← {tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
     </form>
+  )
+}
+
+// Tampil saat admin menutup registrasi dari menu pengaturan
+function ClosedStep() {
+  return (
+    <section className="fb-card rg-closed">
+      <div>
+        <p className="fb-eyebrow">{tr('Registrasi peserta', 'Participant registration')} · Maritime Security Forum 2026</p>
+        <h1>{tr('Pendaftaran Telah Ditutup', 'Registration Is Now Closed')}</h1>
+      </div>
+      <p>
+        {tr(
+          'Terima kasih atas perhatian dan minat Bapak/Ibu untuk berpartisipasi dalam Maritime Security Forum 2026.',
+          'Thank you for your interest in participating in Maritime Security Forum 2026.'
+        )}
+      </p>
+      <p>
+        {tr(
+          'Dengan hormat kami sampaikan bahwa pendaftaran peserta saat ini telah ditutup. Kami tidak lagi dapat menerima pendaftaran baru melalui halaman ini.',
+          'We respectfully inform you that participant registration has now closed, and we are no longer able to accept new registrations through this page.'
+        )}
+      </p>
+      <p>
+        {tr(
+          'Bagi Bapak/Ibu yang telah terdaftar, mohon membawa QR code peserta untuk ditunjukkan pada saat penukaran badge di lokasi acara. Untuk informasi lebih lanjut, silakan menghubungi panitia penyelenggara.',
+          'Registered participants are kindly requested to bring their participant QR code to present when collecting their badge at the venue. For further information, please contact the organising committee.'
+        )}
+      </p>
+      <p className="rg-event">
+        <b>{tr('29–30 Oktober 2026', '29–30 October 2026')}</b>
+        <span>{EVENT.venue}, Cirebon</span>
+      </p>
+      <p className="rg-sign">
+        {tr('Hormat kami,', 'Yours sincerely,')}
+        <br />
+        <b>{tr('Panitia Maritime Security Forum 2026', 'The Organising Committee, Maritime Security Forum 2026')}</b>
+      </p>
+      <Link className="btn btn-primary btn-block" to="/">{tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
+    </section>
   )
 }
 

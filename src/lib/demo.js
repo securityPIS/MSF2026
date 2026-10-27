@@ -112,13 +112,13 @@ function seed() {
   ]
   profiles.find((p) => p.id === 'demo-officer-2').role_id = roles[0].id
 
-  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1 }
+  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1, settings: { registration_open: true } }
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(DB_KEY)
-    if (raw) return { roles: [], feedback: [], nextFeedbackId: 1, ...JSON.parse(raw) }
+    if (raw) return { roles: [], feedback: [], nextFeedbackId: 1, settings: { registration_open: true }, ...JSON.parse(raw) }
   } catch { /* data rusak atau storage diblokir: mulai dari seed */ }
   return seed()
 }
@@ -462,7 +462,18 @@ const RPC = {
     return feedbackDone(p, fb)
   },
 
+  registration_open() {
+    return db.settings.registration_open !== false
+  },
+
+  set_registration_open({ p_open }) {
+    if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh mengubah status registrasi')
+    db.settings.registration_open = p_open !== false
+    return db.settings.registration_open
+  },
+
   register_participant({ p_full_name, p_email, p_phone, p_attendance, p_organization, p_division, p_job_title }) {
+    if (!RPC.registration_open()) return { status: 'closed' }
     const text = (v) => String(v ?? '').trim()
     const name = text(p_full_name)
     const email = text(p_email).toLowerCase()
