@@ -71,6 +71,11 @@ export default function Participants() {
     window.scrollTo({ top: 0 })
   }
 
+  function onDeleted() {
+    setSelected(null)
+    setReload((n) => n + 1)
+  }
+
   function onCreated(p) {
     setAdding(false)
     setCreated(p)
@@ -165,7 +170,7 @@ export default function Participants() {
             <Pager page={page} total={total ?? 0} pageSize={PAGE} onChange={(n) => { setPage(n); window.scrollTo({ top: 0 }) }} />
           </div>
           {selected ? (
-            <ParticipantDetail key={selected} id={selected} canCancel={isAdmin} onBack={() => setSelected(null)} />
+            <ParticipantDetail key={selected} id={selected} canCancel={isAdmin} canDelete={isAdmin} onBack={() => setSelected(null)} onDeleted={onDeleted} />
           ) : (
             <div className="detail empty">{tr('Pilih peserta untuk melihat QR code, lokasi, dan waktu check-in.', 'Choose a participant to see their QR code, check-in locations, and times.')}</div>
           )}
@@ -316,7 +321,7 @@ function CreatedCard({ p, onAgain, onOpen, onClose }) {
   )
 }
 
-function ParticipantDetail({ id, canCancel, onBack }) {
+function ParticipantDetail({ id, canCancel, canDelete, onBack, onDeleted }) {
   const [p, setP] = useState(null)
   const [checkins, setCheckins] = useState([])
   const [feedback, setFeedback] = useState(undefined) // undefined = tabel feedback belum ada / gagal dimuat
@@ -357,6 +362,23 @@ function ParticipantDetail({ id, canCancel, onBack }) {
     const { error } = await supabase.from('checkins').delete().eq('id', c.id)
     setError(error ? error.message : '')
     load()
+  }
+
+  async function remove() {
+    const ok = await confirm({
+      title: tr('Hapus peserta?', 'Delete this participant?'),
+      body: tr(
+        `${p.full_name} akan dihapus permanen beserta ${checkins.length} check-in${feedback ? ' dan feedback' : ''}-nya. QR code ${p.qr_code} tidak bisa dipakai lagi.`,
+        `${p.full_name} will be permanently deleted along with ${checkins.length} check-in${checkins.length === 1 ? '' : 's'}${feedback ? ' and their feedback' : ''}. QR code ${p.qr_code} will stop working.`
+      ),
+      confirmLabel: tr('Hapus peserta', 'Delete participant'),
+      danger: true,
+    })
+    if (!ok) return
+    // Check-in dan feedback ikut terhapus lewat on delete cascade
+    const { error } = await supabase.from('participants').delete().eq('id', p.id)
+    if (error) return setError(tr(`Peserta gagal dihapus: ${error.message}`, `Could not delete the participant: ${error.message}`))
+    onDeleted()
   }
 
   if (!p) return <div className="detail">{tr('Memuat…', 'Loading…')}</div>
@@ -411,6 +433,13 @@ function ParticipantDetail({ id, canCancel, onBack }) {
           <p className="hint">
             {tr('Link riwayat untuk peserta:', 'History link for the participant:')} <a href={link} target="_blank" rel="noreferrer">{link}</a>
           </p>
+
+          {canDelete && (
+            <div className="detail-danger">
+              {error && <p className="notice error">{error}</p>}
+              <button className="btn btn-danger" onClick={remove}>{tr('Hapus peserta', 'Delete participant')}</button>
+            </div>
+          )}
         </div>
       ) : (
         <div id="pd-panel-history" role="tabpanel" aria-labelledby="pd-tab-history">
