@@ -112,13 +112,13 @@ function seed() {
   ]
   profiles.find((p) => p.id === 'demo-officer-2').role_id = roles[0].id
 
-  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1, settings: { registration_open: true } }
+  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1, settings: { registration_open: true, feedback_menu_visible: true } }
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(DB_KEY)
-    if (raw) return { roles: [], feedback: [], nextFeedbackId: 1, settings: { registration_open: true }, ...JSON.parse(raw) }
+    if (raw) return { roles: [], feedback: [], nextFeedbackId: 1, settings: { registration_open: true, feedback_menu_visible: true }, ...JSON.parse(raw) }
   } catch { /* data rusak atau storage diblokir: mulai dari seed */ }
   return seed()
 }
@@ -470,6 +470,16 @@ const RPC = {
     if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh mengubah status registrasi')
     db.settings.registration_open = p_open !== false
     return db.settings.registration_open
+  },
+
+  feedback_menu_visible() {
+    return db.settings.feedback_menu_visible !== false
+  },
+
+  set_feedback_menu_visible({ p_visible }) {
+    if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh mengubah menu feedback')
+    db.settings.feedback_menu_visible = p_visible !== false
+    return db.settings.feedback_menu_visible
   },
 
   register_participant({ p_full_name, p_email, p_phone, p_attendance, p_organization, p_division, p_job_title }) {

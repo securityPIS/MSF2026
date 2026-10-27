@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { tr, useLang } from '../../lib/i18n.jsx'
-import { useRegistrationOpen } from '../../lib/registration.js'
+import { useAppSwitch } from '../../lib/settings.js'
 import { useAuth } from '../../lib/auth.jsx'
 import BrandMark from '../../components/BrandMark.jsx'
 import {
@@ -147,8 +147,9 @@ function Icon({ name, size = 20 }) {
 
 export default function Home() {
   const [speaker, setSpeaker] = useState(null)
-  // Tombol dan link registrasi hanya tampil saat admin membuka registrasi (disembunyikan selama status dimuat)
-  const registrationOpen = useRegistrationOpen().open === true
+  // Tombol/link registrasi dan link feedback diatur admin dari menu pengaturan (disembunyikan selama status dimuat)
+  const registrationOpen = useAppSwitch('registration').on === true
+  const feedbackMenu = useAppSwitch('feedbackMenu').on === true
 
   useEffect(() => {
     const prev = document.title
@@ -161,7 +162,7 @@ export default function Home() {
   return (
     <div className="lp">
       <a className="lp-skip" href="#main">{tr('Lewati ke konten', 'Skip to content')}</a>
-      <Header registrationOpen={registrationOpen} />
+      <Header registrationOpen={registrationOpen} feedbackMenu={feedbackMenu} />
       <main id="main">
         <Hero registrationOpen={registrationOpen} />
         <Gains />
@@ -173,7 +174,7 @@ export default function Home() {
         <Faq />
         <Community />
       </main>
-      <Footer registrationOpen={registrationOpen} />
+      <Footer registrationOpen={registrationOpen} feedbackMenu={feedbackMenu} />
       <SpeakerDialog speakerKey={speaker} onClose={() => setSpeaker(null)} />
     </div>
   )
@@ -204,7 +205,7 @@ function LangSwitch() {
   )
 }
 
-function Header({ registrationOpen }) {
+function Header({ registrationOpen, feedbackMenu }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [menuTop, setMenuTop] = useState(0)
@@ -249,7 +250,7 @@ function Header({ registrationOpen }) {
           <nav className="lp-nav" aria-label={tr('Navigasi halaman', 'Page navigation')}>
             {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
             {registrationOpen && <Link to="/register">{tr('Registrasi', 'Register')}</Link>}
-            <Link to="/feedback">Feedback</Link>
+            {feedbackMenu && <Link to="/feedback">Feedback</Link>}
           </nav>
           <div className="lp-header-actions">
             <LangSwitch />
@@ -280,10 +281,12 @@ function Header({ registrationOpen }) {
               <Icon name="arrow" size={18} />
             </Link>
           )}
-          <Link to="/feedback">
-            {tr('Feedback & sertifikat', 'Feedback & certificate')}
-            <Icon name="arrow" size={18} />
-          </Link>
+          {feedbackMenu && (
+            <Link to="/feedback">
+              {tr('Feedback & sertifikat', 'Feedback & certificate')}
+              <Icon name="arrow" size={18} />
+            </Link>
+          )}
           <div className="lp-mobile-cta">
             <StaffButton />
           </div>
@@ -752,7 +755,7 @@ function Community() {
   )
 }
 
-function Footer({ registrationOpen }) {
+function Footer({ registrationOpen, feedbackMenu }) {
   return (
     <footer className="lp-footer">
       <div className="lp-wrap lp-footer-grid">
@@ -774,7 +777,7 @@ function Footer({ registrationOpen }) {
         <nav aria-label={tr('Tautan footer', 'Footer links')}>
           {NAV.map((n) => <a key={n.id} href={`#${n.id}`}>{L(n.label)}</a>)}
           {registrationOpen && <Link to="/register">{tr('Registrasi', 'Register')}</Link>}
-          <Link to="/feedback">Feedback</Link>
+          {feedbackMenu && <Link to="/feedback">Feedback</Link>}
         </nav>
         <div className="lp-footer-cta">
           <StaffButton />
