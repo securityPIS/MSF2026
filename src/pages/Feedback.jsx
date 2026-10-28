@@ -312,16 +312,19 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
 }
 
 function DoneStep({ result, already }) {
-  const [canvas, setCanvas] = useState(null)
-  const [preview, setPreview] = useState('')
+  const [cert, setCert] = useState(null)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     let cancelled = false
-    renderCertificate({ name: result.name, organization: result.organization, certificateNo: result.certificate_no, submittedAt: result.submitted_at })
+    setCert(null)
+    setFailed(false)
+    renderCertificate(result.name)
       .then((c) => {
-        if (cancelled) return
-        setCanvas(c)
-        setPreview(c.toDataURL('image/png'))
+        if (!cancelled) setCert(c)
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true)
       })
     return () => {
       cancelled = true
@@ -338,14 +341,16 @@ function DoneStep({ result, already }) {
           : tr('Sertifikat keikutsertaan Anda sudah siap.', 'Your certificate of participation is ready.')}
       </p>
       <div className="fb-cert">
-        {preview ? (
-          <img src={preview} alt={tr(`Sertifikat keikutsertaan atas nama ${result.name}`, `Certificate of participation for ${result.name}`)} />
+        {cert ? (
+          <img src={cert.preview} alt={tr(`Sertifikat keikutsertaan atas nama ${result.name}`, `Certificate of participation for ${result.name}`)} />
+        ) : failed ? (
+          <p className="fb-hint">{tr('Sertifikat gagal dimuat. Periksa koneksi lalu muat ulang halaman ini.', 'The certificate could not be loaded. Check your connection and reload this page.')}</p>
         ) : (
           <p className="fb-hint">{tr('Menyiapkan sertifikat…', 'Preparing certificate…')}</p>
         )}
       </div>
-      <button className="btn btn-primary btn-block" disabled={!canvas} onClick={() => downloadCertificate(canvas, result.name)}>
-        {tr('Unduh sertifikat (PNG)', 'Download certificate (PNG)')}
+      <button className="btn btn-primary btn-block" disabled={!cert} onClick={() => downloadCertificate(cert)}>
+        {tr('Unduh sertifikat (PDF)', 'Download certificate (PDF)')}
       </button>
       <p className="fb-hint">{tr('Nomor sertifikat', 'Certificate number')}: <b>{result.certificate_no}</b></p>
       <Link className="btn-link" to="/">{tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
