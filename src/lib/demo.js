@@ -112,7 +112,8 @@ function seed() {
   ]
   profiles.find((p) => p.id === 'demo-officer-2').role_id = roles[0].id
 
-  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback: [], nextFeedbackId: 1, settings: { registration_open: true, feedback_menu_visible: true } }
+  const feedback = sampleFeedback(participants, ago)
+  return { roles, profiles, participants, checkpoints, checkins, nextCheckinId: checkins.length + 1, feedback, nextFeedbackId: feedback.length + 1, settings: { registration_open: true, feedback_menu_visible: true } }
 }
 
 function load() {
@@ -197,6 +198,9 @@ const auth = {
 const RELATIONS = {
   profiles: {
     roles: (r) => db.roles.find((x) => x.id === r.role_id),
+  },
+  feedback: {
+    participants: (r) => db.participants.find((p) => p.id === r.participant_id),
   },
   checkins: {
     participants: (r) => db.participants.find((p) => p.id === r.participant_id),
@@ -521,6 +525,29 @@ const RPC = {
 function participantByEmail(email) {
   const e = String(email ?? '').trim().toLowerCase()
   return e ? db.participants.find((p) => String(p.email ?? '').trim().toLowerCase() === e) : null
+}
+
+// Contoh isian feedback (lewat nama) supaya ringkasan feedback tidak kosong. Nilai tetap, bukan acak.
+function sampleFeedback(participants, ago) {
+  const sectors = ['Energy / Oil & Gas', 'Shipping / Maritime Industry', 'Government / Regulatory Authority', 'Military / Law Enforcement', 'Security / Technology Provider', 'Academia / Research']
+  const days = ['Day 1 – October 29', 'Day 2 – October 30', 'Both days']
+  const topics = ['Maritime Threat Intelligence & Risk Assessment', 'Cybersecurity in Maritime Operations', 'Geopolitical Risks & Regional Security', 'Maritime Security Technology & Innovation', 'Port & Vessel Security', 'Crisis Management & Emergency Response', 'Maritime Security Regulations & Compliance']
+  const ratingKeys = ['topic_relevance', 'speakers', 'emerging_threats', 'insights', 'organization', 'registration', 'venue', 'networking', 'overall']
+  const valuable = ['Panel keamanan siber di kapal tanker, sangat relevan dengan operasi kami.', 'Sesi intelijen ancaman maritim: datanya konkret dan bisa langsung dipakai.', 'Diskusi geopolitik Laut Natuna Utara membuka perspektif baru.']
+  const suggestions = ['Tambah waktu tanya jawab di setiap panel.', 'Materi presentasi sebaiknya dibagikan setelah acara.', 'Registrasi pagi agak antre, mohon ditambah meja.', 'Sediakan sesi networking terstruktur per sektor.']
+  return Array.from({ length: 14 }, (_, i) => {
+    const answers = {
+      sector: i % 9 === 8 ? 'Other' : sectors[(i * 5) % sectors.length],
+      days_attended: days[i % 4 === 0 ? 0 : i % 5 === 0 ? 1 : 2],
+      recommend: [10, 9, 8, 9, 10, 7, 6, 9, 10, 8, 9, 5, 10, 9][i],
+      future_topics: topics.filter((_, t) => (i + t) % 3 === 0 || t === 1),
+    }
+    if (answers.sector === 'Other') answers.sector_other = 'Asuransi Maritim'
+    ratingKeys.forEach((k, j) => (answers[k] = [5, 4, 4, 5, 3, 4, 5, 2, 4, 5][(i + j * 3) % 10]))
+    if (i % 3 === 0) answers.most_valuable = valuable[(i / 3) % valuable.length]
+    if (i % 4 === 1) answers.suggestion = suggestions[((i - 1) / 4) % suggestions.length]
+    return { id: i + 1, participant_id: null, name: participants[(i * 3) % participants.length].full_name, answers, submitted_at: ago(600 - i * 40) }
+  })
 }
 
 function feedbackDone(p, fb) {

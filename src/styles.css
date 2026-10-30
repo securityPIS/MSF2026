@@ -797,3 +797,80 @@ dd { margin: 0; overflow-wrap: anywhere; }
   .rg-two { grid-template-columns: 1fr 1fr; }
   .rg-phone { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
 }
+
+/* ---------- Ringkasan feedback (/admin/feedback) ----------
+   Warna rating: skala divergen merah (buruk) – abu (cukup) – biru/cyan (baik), tiap sisi diuji ordinal
+   terhadap permukaan panel (#0a2876). Satu seri (pilihan ganda) memakai cyan saja. */
+.fbs {
+  --viz-r1: #ff7b7b; --viz-r2: #a8505a; --viz-r3: #7f8aa3; --viz-r4: #2b86c4; --viz-r5: #48d6ff;
+  --viz-ink-dark: #03103a;
+}
+.fbs-updated { margin: -0.6rem 0 1rem; }
+.fbs-tiles { list-style: none; margin: 0 0 1.5rem; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.fbs-tile { display: grid; gap: 0.15rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); }
+.fbs-tile span { color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.fbs-tile b { font-size: 2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+.fbs-tile b i { margin-left: 0.15rem; color: var(--muted); font-size: 1rem; font-style: normal; font-weight: 700; }
+.fbs-tile small { color: var(--faint); font-size: 0.74rem; }
+.fbs-section { margin-bottom: 1.75rem; }
+.fbs-section > h2 { margin-bottom: 0.6rem; color: var(--cyan); font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.fbs-grid { display: grid; gap: 0.75rem; }
+.fbs-q { display: grid; gap: 0.75rem; align-content: start; }
+.fbs-q header { display: flex; gap: 0.6rem; align-items: flex-start; }
+.fbs-q h3 { margin: 0; font-size: 0.92rem; font-weight: 700; line-height: 1.35; }
+.fbs-num { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--cyan-soft); color: var(--cyan); font-size: 0.75rem; font-weight: 800; }
+.fbs-q .hint { margin: 0; }
+.fbs-avg { display: flex; align-items: baseline; gap: 0.4rem; margin: 0; }
+.fbs-avg b { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.fbs-avg span { color: var(--muted); font-size: 0.8rem; }
+.fbs-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin: 0 0 0.6rem; padding: 0; color: var(--muted); font-size: 0.75rem; }
+.fbs-q .fbs-legend { margin: 0; }
+.fbs-legend li { display: flex; align-items: center; gap: 0.35rem; }
+.fbs-legend b { color: var(--text); }
+.fbs-swatch { width: 10px; height: 10px; border-radius: 3px; }
+.r1 { --c: var(--viz-r1); } .r2 { --c: var(--viz-r2); } .r3 { --c: var(--viz-r3); } .r4 { --c: var(--viz-r4); } .r5 { --c: var(--viz-r5); }
+.fbs .neg { --c: var(--viz-r1); } .fbs .mid { --c: var(--viz-r3); } .fbs .pos { --c: var(--viz-r5); }
+.fbs-swatch { background: var(--c); }
+/* Bar bertumpuk: celah 2px antar segmen, ujung membulat 4px */
+.fbs-stack { display: flex; gap: 2px; height: 26px; }
+.fbs-stack span {
+  position: relative; display: grid; place-items: center; min-width: 4px; flex-basis: 0;
+  background: var(--c); color: var(--viz-ink-dark); font-size: 0.72rem; font-weight: 800; outline-offset: 2px;
+}
+.fbs-stack .r2, .fbs-stack .r4 { color: #fff; }
+.fbs-stack span:first-child { border-radius: 4px 0 0 4px; }
+.fbs-stack span:last-child { border-radius: 0 4px 4px 0; }
+.fbs-stack span:only-child { border-radius: 4px; }
+.fbs-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+.fbs-bars li { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 0.75rem; font-size: 0.84rem; outline-offset: 2px; }
+.fbs-bar-label { color: var(--text); overflow-wrap: anywhere; }
+.fbs-bar-value { grid-column: 2; grid-row: 1; color: var(--muted); font-size: 0.78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fbs-bar-value b { color: var(--text); }
+.fbs-bar-track { grid-column: 1 / -1; grid-row: 2; height: 8px; border-radius: 4px; background: rgba(3, 16, 58, 0.55); }
+.fbs-bar-track span { display: block; height: 100%; min-width: 2px; border-radius: 4px; background: var(--viz-r5); }
+.fbs-others { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.fbs-others b { color: var(--text); }
+.fbs-cols { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 2px; align-items: end; height: 150px; }
+/* Kolom NPS: angka tepat di atas batang, tinggi batang maks 75% supaya ada ruang untuk angka dan sumbu */
+.fbs-col { position: relative; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; text-align: center; outline-offset: 2px; }
+.fbs-col span { flex: none; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--c); }
+.fbs-col small { color: var(--muted); font-size: 0.7rem; font-weight: 700; line-height: 1.4; }
+.fbs-col b { padding-top: 0.25rem; border-top: 1px solid var(--border); color: var(--faint); font-size: 0.72rem; }
+.fbs-texts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.fbs-texts li { padding: 0.7rem 0.85rem; border-radius: var(--r); background: rgba(3, 16, 58, 0.45); }
+.fbs-texts p { margin: 0 0 0.25rem; white-space: pre-line; overflow-wrap: anywhere; }
+.fbs-texts small { color: var(--faint); font-size: 0.75rem; }
+/* Tooltip saat kursor/fokus di atas bar */
+.fbs [data-tip]:hover::after, .fbs [data-tip]:focus-visible::after {
+  content: attr(data-tip); position: absolute; z-index: 5; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
+  padding: 0.35rem 0.55rem; border: 1px solid var(--border-strong); border-radius: 8px; background: #041446;
+  color: #fff; font-size: 0.75rem; font-weight: 600; white-space: nowrap; pointer-events: none;
+  box-shadow: 0 8px 20px rgba(2, 10, 40, 0.5);
+}
+@media (min-width: 640px) {
+  .fbs-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .fbs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fbs-q.wide { grid-column: 1 / -1; }
+}
