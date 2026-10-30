@@ -1,38 +1,115 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { demo, supabase } from '../lib/supabase.js'
 import { tr, useLang } from '../lib/i18n.jsx'
 import { formatTime } from '../lib/format.js'
 import BrandMark from '../components/BrandMark.jsx'
 import { downloadCertificate, renderCertificate } from '../lib/certificate.js'
-import { PROGRAMME } from './home/content.js'
 
-// Pertanyaan contoh (dummy) untuk feedback MSF 2026. Jawaban disimpan apa adanya di kolom feedback.answers.
+// Pertanyaan sesuai formulir panitia "MSF2026 Participant Feedback & Event Evaluation".
+// Jawaban disimpan apa adanya di kolom feedback.answers; nilai pilihan memakai label bahasa Inggris supaya mudah direkap.
+// Key "overall" (pertanyaan 12) juga dibaca di detail peserta (admin).
 const L = (x) => tr(x.id, x.en)
-const SESSIONS = PROGRAMME.flatMap((d) => d.sessions.filter((s) => !s.kind).map((s) => s.title))
+const OTHER = 'Other'
+const opt = (en, id) => ({ value: en, label: { id, en } })
+const rating = (key, en, id) => ({ key, type: 'rating', label: { id, en } })
 const QUESTIONS = [
-  { key: 'overall', type: 'rating', label: { id: 'Secara keseluruhan, bagaimana penilaian Anda terhadap MSF 2026?', en: 'Overall, how would you rate MSF 2026?' } },
-  { key: 'content', type: 'rating', label: { id: 'Seberapa relevan materi forum dengan pekerjaan Anda?', en: 'How relevant was the content to your work?' } },
-  { key: 'speakers', type: 'rating', label: { id: 'Bagaimana kualitas para pembicara?', en: 'How would you rate the speakers?' } },
-  { key: 'organization', type: 'rating', label: { id: 'Bagaimana penyelenggaraan acara dan venue?', en: 'How would you rate the organisation and venue?' } },
   {
-    key: 'best_session', type: 'select',
-    label: { id: 'Sesi mana yang paling bermanfaat bagi Anda?', en: 'Which session was most valuable to you?' },
-    options: SESSIONS.map((s) => ({ value: s, label: { id: s, en: s } })),
-  },
-  {
-    key: 'attend_next', type: 'choice',
-    label: { id: 'Apakah Anda akan hadir di Maritime Security Forum berikutnya?', en: 'Would you attend the next Maritime Security Forum?' },
+    key: 'sector', type: 'choice', cols: 2, other: true,
+    section: { id: 'A. Informasi Peserta', en: 'A. Participant Information' },
+    label: { id: 'Sektor apa yang paling mewakili organisasi Anda?', en: 'Which sector best represents your organization?' },
     options: [
-      { value: 'yes', label: { id: 'Ya', en: 'Yes' } },
-      { value: 'maybe', label: { id: 'Mungkin', en: 'Maybe' } },
-      { value: 'no', label: { id: 'Tidak', en: 'No' } },
+      opt('Energy / Oil & Gas', 'Energi / Migas'),
+      opt('Shipping / Maritime Industry', 'Pelayaran / Industri Maritim'),
+      opt('Government / Regulatory Authority', 'Pemerintah / Regulator'),
+      opt('Military / Law Enforcement', 'Militer / Penegak Hukum'),
+      opt('Security / Technology Provider', 'Penyedia Jasa Keamanan / Teknologi'),
+      opt('Academia / Research', 'Akademisi / Riset'),
     ],
   },
-  { key: 'topics', type: 'text', optional: true, label: { id: 'Topik apa yang ingin dibahas di forum berikutnya?', en: 'What topics would you like at the next forum?' } },
-  { key: 'suggestion', type: 'text', optional: true, label: { id: 'Saran untuk panitia', en: 'Suggestions for the organisers' } },
+  {
+    key: 'days_attended', type: 'choice',
+    label: { id: 'Hari forum mana yang Anda hadiri?', en: 'Which day(s) of the forum did you attend?' },
+    options: [opt('Day 1 – October 29', 'Hari 1 – 29 Oktober'), opt('Day 2 – October 30', 'Hari 2 – 30 Oktober'), opt('Both days', 'Kedua hari')],
+  },
+  {
+    ...rating('topic_relevance',
+      'How relevant were the forum topics to your professional responsibilities and industry challenges?',
+      'Seberapa relevan topik forum dengan tanggung jawab profesional dan tantangan industri Anda?'),
+    section: { id: 'B. Materi Forum & Pembicara', en: 'B. Forum Content & Speakers' },
+  },
+  rating('speakers', 'How would you rate the quality and expertise of the speakers?', 'Bagaimana penilaian Anda terhadap kualitas dan keahlian para pembicara?'),
+  rating('emerging_threats',
+    'How effectively did the sessions address emerging maritime security threats and challenges?',
+    'Seberapa efektif sesi-sesi membahas ancaman dan tantangan keamanan maritim yang sedang berkembang?'),
+  rating('insights',
+    'How useful were the insights and discussions for your professional decision-making?',
+    'Seberapa bermanfaat wawasan dan diskusi forum untuk pengambilan keputusan profesional Anda?'),
+  {
+    key: 'most_valuable', type: 'text', optional: true,
+    label: { id: 'Topik atau sesi mana yang paling bermanfaat bagi Anda, dan mengapa?', en: 'Which topic or session did you find most valuable, and why?' },
+  },
+  {
+    ...rating('organization',
+      'How satisfied were you with the overall event organization and coordination?',
+      'Seberapa puas Anda dengan penyelenggaraan dan koordinasi acara secara keseluruhan?'),
+    section: { id: 'C. Penyelenggaraan & Pengalaman Acara', en: 'C. Event Organization & Experience' },
+  },
+  rating('registration',
+    'How would you rate the registration process and participant information provided before the event?',
+    'Bagaimana penilaian Anda terhadap proses registrasi dan informasi peserta yang diberikan sebelum acara?'),
+  rating('venue', 'How satisfied were you with the venue, facilities, and event arrangements?', 'Seberapa puas Anda dengan venue, fasilitas, dan pengaturan acara?'),
+  rating('networking',
+    'How valuable were the networking and collaboration opportunities provided during the forum?',
+    'Seberapa berharga kesempatan networking dan kolaborasi yang tersedia selama forum?'),
+  {
+    ...rating('overall', 'Overall, how satisfied were you with Maritime Security Forum 2026?', 'Secara keseluruhan, seberapa puas Anda dengan Maritime Security Forum 2026?'),
+    section: { id: 'D. Evaluasi Keseluruhan & Harapan ke Depan', en: 'D. Overall Evaluation & Future Expectations' },
+  },
+  {
+    key: 'recommend', type: 'scale',
+    label: {
+      id: 'Seberapa besar kemungkinan Anda merekomendasikan forum ini kepada rekan kerja atau jaringan profesional Anda?',
+      en: 'How likely are you to recommend this forum to your colleagues or professional network?',
+    },
+  },
+  {
+    key: 'future_topics', type: 'multi', cols: 2, other: true,
+    label: { id: 'Topik apa yang ingin Anda lihat di Maritime Security Forum berikutnya?', en: 'What topics would you like to see covered in future Maritime Security Forums?' },
+    note: { id: 'Boleh pilih lebih dari satu.', en: 'Select all that apply.' },
+    options: [
+      opt('Maritime Threat Intelligence & Risk Assessment', 'Intelijen Ancaman & Penilaian Risiko Maritim'),
+      opt('Cybersecurity in Maritime Operations', 'Keamanan Siber dalam Operasi Maritim'),
+      opt('Geopolitical Risks & Regional Security', 'Risiko Geopolitik & Keamanan Kawasan'),
+      opt('Maritime Security Technology & Innovation', 'Teknologi & Inovasi Keamanan Maritim'),
+      opt('Port & Vessel Security', 'Keamanan Pelabuhan & Kapal'),
+      opt('Crisis Management & Emergency Response', 'Manajemen Krisis & Tanggap Darurat'),
+      opt('Maritime Security Regulations & Compliance', 'Regulasi & Kepatuhan Keamanan Maritim'),
+    ],
+  },
+  {
+    key: 'suggestion', type: 'text', optional: true,
+    label: { id: 'Perbaikan atau saran apa yang Anda rekomendasikan untuk acara berikutnya?', en: 'What improvements or suggestions would you recommend for future events?' },
+  },
 ]
-const RATING_ENDS = { low: { id: 'Sangat kurang', en: 'Very poor' }, high: { id: 'Sangat baik', en: 'Excellent' } }
+const RATINGS = [
+  { id: 'Sangat buruk', en: 'Very Poor' },
+  { id: 'Buruk', en: 'Poor' },
+  { id: 'Cukup', en: 'Fair' },
+  { id: 'Baik', en: 'Good' },
+  { id: 'Sangat baik', en: 'Excellent' },
+]
+const SCALE_ENDS = { low: { id: '0 = Sangat tidak mungkin', en: '0 = Not at all likely' }, high: { id: '10 = Sangat mungkin', en: '10 = Extremely likely' } }
+
+// Jawaban "Other" disimpan di <key>_other
+const otherKey = (q) => `${q.key}_other`
+const picked = (q, answers) => (q.type === 'multi' ? (answers[q.key] ?? []).includes(OTHER) : answers[q.key] === OTHER)
+const blank = (v) => v === undefined || v === '' || (Array.isArray(v) && v.length === 0)
+function unanswered(q, answers) {
+  if (q.optional) return false
+  if (blank(answers[q.key])) return true
+  return q.other && picked(q, answers) && !String(answers[otherKey(q)] ?? '').trim()
+}
 
 // Ganti bahasa menggambar ulang seluruh halaman; status disimpan di sessionStorage supaya jawaban tidak hilang
 const STATE_KEY = 'msf2026.feedback'
@@ -216,14 +293,19 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const refs = useRef({})
-  const set = (k, v) => {
+  // qKey: pertanyaan yang tanda "wajib dijawab"-nya dihapus (kolom "Other" milik pertanyaan induknya)
+  const set = (k, v, qKey = k) => {
     setAnswers((a) => ({ ...a, [k]: v }))
-    setMissing((m) => m.filter((x) => x !== k))
+    setMissing((m) => m.filter((x) => x !== qKey))
+  }
+  const toggle = (q, value) => {
+    const list = answers[q.key] ?? []
+    set(q.key, list.includes(value) ? list.filter((x) => x !== value) : [...list, value])
   }
 
   async function submit(e) {
     e.preventDefault()
-    const empty = QUESTIONS.filter((q) => !q.optional && (answers[q.key] === undefined || answers[q.key] === '')).map((q) => q.key)
+    const empty = QUESTIONS.filter((q) => unanswered(q, answers)).map((q) => q.key)
     setMissing(empty)
     if (empty.length) {
       refs.current[empty[0]]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -232,9 +314,11 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
     setBusy(true)
     setError('')
     const payload = {}
+    const clean = (v) => (typeof v === 'string' ? v.trim().slice(0, 2000) : v)
     for (const q of QUESTIONS) {
       const v = answers[q.key]
-      if (v !== undefined && v !== '') payload[q.key] = typeof v === 'string' ? v.trim().slice(0, 2000) : v
+      if (!blank(v)) payload[q.key] = Array.isArray(v) ? v.map(clean) : clean(v)
+      if (q.other && picked(q, answers)) payload[otherKey(q)] = clean(answers[otherKey(q)] ?? '')
     }
     const { data, error } = await supabase.rpc('submit_feedback', { p_email: email, p_answers: payload })
     setBusy(false)
@@ -254,53 +338,90 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
         <button type="button" className="btn-ghost" onClick={onBack}>{tr('Ganti email', 'Change email')}</button>
       </div>
 
+      <p className="fb-hint">
+        {tr('Perkiraan waktu pengisian 3–5 menit. Pilih satu jawaban kecuali dinyatakan lain.', 'Estimated completion time: 3–5 minutes. Please select one answer unless stated otherwise.')}
+      </p>
+
       {QUESTIONS.map((q, i) => (
-        <fieldset key={q.key} ref={(el) => (refs.current[q.key] = el)} className={`fb-q ${missing.includes(q.key) ? 'missing' : ''}`}>
-          <legend>
-            <span className="fb-q-num">{i + 1}</span>
-            <span>
-              {L(q.label)}
-              {q.optional ? <em>{tr(' (opsional)', ' (optional)')}</em> : <span className="fb-req" aria-label={tr('wajib', 'required')}> *</span>}
-            </span>
-          </legend>
-          {q.type === 'rating' && (
-            <div className="fb-rating">
-              <div className="fb-rating-row">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <label key={n} className={answers[q.key] === n ? 'active' : ''}>
-                    <input type="radio" name={q.key} value={n} checked={answers[q.key] === n} onChange={() => set(q.key, n)} />
-                    <span aria-hidden="true">{'★'}</span>
-                    <b>{n}</b>
-                  </label>
-                ))}
+        <Fragment key={q.key}>
+          {q.section && <h2 className="fb-section">{L(q.section)}</h2>}
+          <fieldset ref={(el) => (refs.current[q.key] = el)} className={`fb-q ${missing.includes(q.key) ? 'missing' : ''}`}>
+            <legend>
+              <span className="fb-q-num">{i + 1}</span>
+              <span>
+                {L(q.label)}
+                {q.optional ? <em>{tr(' (opsional)', ' (optional)')}</em> : <span className="fb-req" aria-label={tr('wajib', 'required')}> *</span>}
+                {q.note && <small className="fb-q-note">{L(q.note)}</small>}
+              </span>
+            </legend>
+            {q.type === 'rating' && (
+              <div className="fb-rating">
+                <div className="fb-rating-row">
+                  {RATINGS.map((r, j) => (
+                    <label key={j + 1} className={answers[q.key] === j + 1 ? 'active' : ''}>
+                      <input type="radio" name={q.key} value={j + 1} checked={answers[q.key] === j + 1} onChange={() => set(q.key, j + 1)} />
+                      <span aria-hidden="true">{'★'}</span>
+                      <b>{j + 1}</b>
+                      <small>{L(r)}</small>
+                    </label>
+                  ))}
+                </div>
               </div>
-              <div className="fb-rating-ends" aria-hidden="true">
-                <span>{L(RATING_ENDS.low)}</span>
-                <span>{L(RATING_ENDS.high)}</span>
+            )}
+            {q.type === 'scale' && (
+              <div className="fb-rating">
+                <div className="fb-scale-row">
+                  {Array.from({ length: 11 }, (_, n) => (
+                    <label key={n} className={answers[q.key] === n ? 'active' : ''}>
+                      <input type="radio" name={q.key} value={n} checked={answers[q.key] === n} onChange={() => set(q.key, n)} />
+                      <b>{n}</b>
+                    </label>
+                  ))}
+                </div>
+                <div className="fb-rating-ends">
+                  <span>{L(SCALE_ENDS.low)}</span>
+                  <span>{L(SCALE_ENDS.high)}</span>
+                </div>
               </div>
-            </div>
-          )}
-          {q.type === 'choice' && (
-            <div className="fb-choices">
-              {q.options.map((o) => (
-                <label key={o.value} className={answers[q.key] === o.value ? 'active' : ''}>
-                  <input type="radio" name={q.key} value={o.value} checked={answers[q.key] === o.value} onChange={() => set(q.key, o.value)} />
-                  {L(o.label)}
-                </label>
-              ))}
-            </div>
-          )}
-          {q.type === 'select' && (
-            <select value={answers[q.key] ?? ''} onChange={(e) => set(q.key, e.target.value)} aria-label={L(q.label)}>
-              <option value="">{tr('Pilih sesi', 'Choose a session')}</option>
-              {q.options.map((o) => <option key={o.value} value={o.value}>{L(o.label)}</option>)}
-            </select>
-          )}
-          {q.type === 'text' && (
-            <textarea rows={3} maxLength={2000} value={answers[q.key] ?? ''} onChange={(e) => set(q.key, e.target.value)} aria-label={L(q.label)} />
-          )}
-          {missing.includes(q.key) && <p className="fb-missing">{tr('Pertanyaan ini wajib dijawab.', 'This question is required.')}</p>}
-        </fieldset>
+            )}
+            {(q.type === 'choice' || q.type === 'multi') && (
+              <div className={`fb-choices ${q.cols === 2 ? 'two' : ''}`}>
+                {[...q.options, ...(q.other ? [opt(OTHER, 'Lainnya')] : [])].map((o) => {
+                  const on = q.type === 'multi' ? (answers[q.key] ?? []).includes(o.value) : answers[q.key] === o.value
+                  return (
+                    <label key={o.value} className={on ? 'active' : ''}>
+                      {q.type === 'multi' ? (
+                        <input type="checkbox" value={o.value} checked={on} onChange={() => toggle(q, o.value)} />
+                      ) : (
+                        <input type="radio" name={q.key} value={o.value} checked={on} onChange={() => set(q.key, o.value)} />
+                      )}
+                      {L(o.label)}
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+            {q.other && picked(q, answers) && (
+              <input
+                className="fb-other"
+                type="text"
+                maxLength={200}
+                value={answers[otherKey(q)] ?? ''}
+                onChange={(e) => set(otherKey(q), e.target.value, q.key)}
+                placeholder={tr('Sebutkan lainnya', 'Please specify')}
+                aria-label={tr('Lainnya, sebutkan', 'Other, please specify')}
+              />
+            )}
+            {q.type === 'text' && (
+              <textarea rows={3} maxLength={2000} value={answers[q.key] ?? ''} onChange={(e) => set(q.key, e.target.value)} aria-label={L(q.label)} />
+            )}
+            {missing.includes(q.key) && (
+              <p className="fb-missing">
+                {blank(answers[q.key]) ? tr('Pertanyaan ini wajib dijawab.', 'This question is required.') : tr('Isi kolom "Lainnya".', 'Please specify "Other".')}
+              </p>
+            )}
+          </fieldset>
+        </Fragment>
       ))}
 
       {error && <p className="form-error" role="alert">{error}</p>}

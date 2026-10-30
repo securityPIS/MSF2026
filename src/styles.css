@@ -752,6 +752,14 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .fb-rating-ends { display: flex; justify-content: space-between; margin-top: 0.4rem; color: var(--faint); font-size: 0.75rem; }
 .fb-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .fb-choices label { min-height: 48px; }
+.fb-choices.two { grid-template-columns: repeat(2, 1fr); }
+.fb-choices label { padding: 0.55rem 0.7rem; text-align: center; line-height: 1.3; }
+.fb-rating label small { font-size: 0.66rem; font-weight: 600; line-height: 1.15; text-align: center; }
+.fb-scale-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.3rem; }
+.fb-scale-row label { min-height: 48px; }
+.fb-section { margin: 0.6rem 0 -0.3rem; color: var(--cyan); font-size: 0.82rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.fb-q-note { display: block; margin-top: 0.2rem; color: var(--faint); font-size: 0.8rem; font-weight: 500; }
+.fb-other { width: 100%; margin-top: 0.6rem; padding: 0.7rem 0.85rem; border: 1px solid var(--border-strong); border-radius: var(--r); background: var(--field); color: var(--text); font: inherit; }
 .fb-q textarea { width: 100%; min-height: 96px; padding: 0.7rem 0.85rem; border: 1px solid var(--border-strong); border-radius: var(--r); background: var(--field); color: var(--text); font: inherit; resize: vertical; }
 
 .fb-done { justify-items: center; text-align: center; }
@@ -783,6 +791,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
 
 @media (min-width: 640px) {
   .fb-card { padding: 2rem; }
+  .fb-scale-row { grid-template-columns: repeat(11, 1fr); }
   .rg-two { grid-template-columns: 1fr 1fr; }
   .rg-phone { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); }
 }
