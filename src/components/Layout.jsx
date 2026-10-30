@@ -33,6 +33,8 @@ export default function Layout() {
     { to: '/scan', label: 'Scan', icon: 'scan', menu: 'scan' },
     { to: '/admin', label: 'Monitoring', icon: 'dashboard', end: true, menu: 'dashboard' },
     { to: '/admin/participants', label: tr('Peserta', 'Participants'), icon: 'participants', menu: 'participants' },
+    // Ringkasan feedback mengikuti akses Monitoring (policy feedback_staff_select)
+    { to: '/admin/feedback', label: 'Feedback', icon: 'feedback', menu: 'dashboard' },
   ].filter((l) => canMenu(profile, l.menu))
 
   return (

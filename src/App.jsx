@@ -14,6 +14,7 @@ import Participants from './pages/admin/Participants.jsx'
 import Import from './pages/admin/Import.jsx'
 import Checkpoints from './pages/admin/Checkpoints.jsx'
 import Staff from './pages/admin/Staff.jsx'
+import FeedbackSummary from './pages/admin/FeedbackSummary.jsx'
 import Home from './pages/home/Home.jsx'
 import Feedback from './pages/Feedback.jsx'
 import Register from './pages/Register.jsx'
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="/scan" element={menu('scan', <Scan />)} />
               <Route path="/admin" element={menu('dashboard', <Dashboard />)} />
               <Route path="/admin/participants" element={menu('participants', <Participants />)} />
+              <Route path="/admin/feedback" element={menu('dashboard', <FeedbackSummary />)} />
               <Route path="/admin/import" element={admin(<Import />)} />
               <Route path="/admin/checkpoints" element={admin(<Checkpoints />)} />
               <Route path="/admin/staff" element={admin(<Staff />)} />
