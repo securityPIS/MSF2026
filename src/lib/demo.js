@@ -84,7 +84,7 @@ function seed() {
   ]
   const participants = people.map(([qr_code, full_name, organization, category]) => ({
     id: uid(), qr_code, full_name, organization, division: null, job_title: null, category, phone: null, attendance: null,
-    // Email contoh untuk mencoba halaman /feedback, mis. agus.wijaya@contoh.id
+    // Email contoh, mis. agus.wijaya@contoh.id
     email: `${full_name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '')}@contoh.id`,
     created_at: ago(3000), updated_at: ago(3000),
   }))
@@ -460,6 +460,15 @@ const RPC = {
       db.feedback.push(fb)
     }
     return feedbackDone(p, fb)
+  },
+
+  submit_feedback_by_name({ p_name, p_answers }) {
+    const name = String(p_name ?? '').replace(/\s+/g, ' ').trim()
+    if (!name || name.length > 120) throw new Error('Nama tidak valid')
+    if (!p_answers || typeof p_answers !== 'object' || Array.isArray(p_answers)) throw new Error('Jawaban tidak valid')
+    const fb = { id: db.nextFeedbackId++, participant_id: null, name, answers: clone(p_answers), submitted_at: new Date().toISOString() }
+    db.feedback.push(fb)
+    return { status: 'done', name, certificate_no: `MSF2026-${String(fb.id).padStart(4, '0')}`, submitted_at: fb.submitted_at }
   },
 
   registration_open() {

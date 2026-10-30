@@ -1,8 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { demo, supabase } from '../lib/supabase.js'
+import { supabase } from '../lib/supabase.js'
 import { tr, useLang } from '../lib/i18n.jsx'
-import { formatTime } from '../lib/format.js'
 import BrandMark from '../components/BrandMark.jsx'
 import { downloadCertificate, renderCertificate } from '../lib/certificate.js'
 
@@ -112,7 +111,7 @@ function unanswered(q, answers) {
 }
 
 // Ganti bahasa menggambar ulang seluruh halaman; status disimpan di sessionStorage supaya jawaban tidak hilang
-const STATE_KEY = 'msf2026.feedback'
+const STATE_KEY = 'msf2026.feedback.v2' // v2: langkah email diganti nama
 function readState() {
   try {
     return JSON.parse(sessionStorage.getItem(STATE_KEY)) || {}
@@ -121,7 +120,7 @@ function readState() {
   }
 }
 
-// Fungsi database belum dibuat (migrasi feedback belum dijalankan) atau gangguan lain
+// Fungsi database belum dibuat (migrasi 20261030000000_feedback_by_name.sql belum dijalankan) atau gangguan lain
 function describeError(error) {
   if (error?.code === 'PGRST202' || /function .* does not exist|Could not find the function/i.test(error?.message ?? '')) {
     return tr('Halaman feedback belum aktif. Silakan hubungi panitia.', 'The feedback page is not active yet. Please contact the organisers.')
@@ -131,18 +130,16 @@ function describeError(error) {
 
 export default function Feedback() {
   const [saved] = useState(readState)
-  const [step, setStep] = useState(saved.step ?? 'email') // email → form → done
-  const [email, setEmail] = useState(saved.email ?? '')
-  const [person, setPerson] = useState(saved.person ?? null)
+  const [step, setStep] = useState(saved.step ?? 'name') // name → form → done
+  const [name, setName] = useState(saved.name ?? '')
   const [answers, setAnswers] = useState(saved.answers ?? {})
   const [result, setResult] = useState(saved.result ?? null)
-  const [already, setAlready] = useState(saved.already ?? false)
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(STATE_KEY, JSON.stringify({ step, email, person, answers, result, already }))
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ step, name, answers, result }))
     } catch { /* storage diblokir: status hanya bertahan selama halaman terbuka */ }
-  }, [step, email, person, answers, result, already])
+  }, [step, name, answers, result])
 
   useEffect(() => {
     const prev = document.title
@@ -162,48 +159,39 @@ export default function Feedback() {
       <main className="fb-main">
         <ol className="fb-steps" aria-label={tr('Langkah', 'Steps')}>
           {[
-            ['email', tr('Email', 'Email')],
+            ['name', tr('Nama', 'Name')],
             ['form', tr('Feedback', 'Feedback')],
             ['done', tr('Sertifikat', 'Certificate')],
           ].map(([key, label], i) => (
-            <li key={key} className={step === key ? 'current' : ['email', 'form', 'done'].indexOf(step) > i ? 'done' : ''} aria-current={step === key ? 'step' : undefined}>
+            <li key={key} className={step === key ? 'current' : ['name', 'form', 'done'].indexOf(step) > i ? 'done' : ''} aria-current={step === key ? 'step' : undefined}>
               <span>{i + 1}</span>
               {label}
             </li>
           ))}
         </ol>
 
-        {step === 'email' && (
-          <EmailStep
-            onFound={(e, r) => {
-              setEmail(e)
-              setPerson({ name: r.name, organization: r.organization })
-              setAnswers({})
-              if (r.status === 'done') {
-                setResult(r)
-                setAlready(true)
-                setStep('done')
-              } else {
-                setStep('form')
-              }
+        {step === 'name' && (
+          <NameStep
+            initial={name}
+            onNext={(n) => {
+              setName(n)
+              setStep('form')
             }}
           />
         )}
         {step === 'form' && (
           <FormStep
-            email={email}
-            person={person}
+            name={name}
             answers={answers}
             setAnswers={setAnswers}
-            onBack={() => setStep('email')}
+            onBack={() => setStep('name')}
             onDone={(r) => {
               setResult(r)
-              setAlready(false)
               setStep('done')
             }}
           />
         )}
-        {step === 'done' && result && <DoneStep result={result} already={already} />}
+        {step === 'done' && result && <DoneStep result={result} />}
       </main>
     </div>
   )
@@ -229,29 +217,14 @@ export function FeedbackHeader() {
   )
 }
 
-function EmailStep({ onFound }) {
-  const [email, setEmail] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+// Nama tidak dicek ke data peserta; nama ini yang tercetak di sertifikat
+function NameStep({ initial, onNext }) {
+  const [value, setValue] = useState(initial)
 
-  async function submit(e) {
+  function submit(e) {
     e.preventDefault()
-    const value = email.trim()
-    if (!value) return
-    setBusy(true)
-    setError('')
-    const { data, error } = await supabase.rpc('feedback_lookup', { p_email: value })
-    setBusy(false)
-    if (error) return setError(describeError(error))
-    if (data?.status === 'not_found') {
-      return setError(
-        tr(
-          'Email ini tidak terdaftar sebagai peserta. Gunakan email yang Anda pakai saat registrasi, atau hubungi panitia.',
-          'This email is not registered as a participant. Use the email you registered with, or contact the organisers.'
-        )
-      )
-    }
-    onFound(value, data)
+    const n = value.replace(/\s+/g, ' ').trim()
+    if (n) onNext(n)
   }
 
   return (
@@ -265,30 +238,29 @@ function EmailStep({ onFound }) {
         )}
       </p>
       <label>
-        {tr('Email yang terdaftar', 'Registered email')}
+        {tr('Nama lengkap', 'Full name')}
         <input
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          autoCapitalize="none"
+          type="text"
+          autoComplete="name"
+          autoCapitalize="words"
           required
           autoFocus
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={tr('nama@perusahaan.com', 'name@company.com')}
+          maxLength={120}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={tr('Nama Anda', 'Your name')}
         />
       </label>
-      {demo && <p className="fb-hint">{tr('Mode demo: coba', 'Demo mode: try')} <code>agus.wijaya@contoh.id</code></p>}
-      {error && <p className="form-error" role="alert">{error}</p>}
-      <button className="btn btn-primary btn-block" disabled={busy}>
-        {busy ? tr('Memeriksa…', 'Checking…') : tr('Lanjut', 'Continue')}
+      <p className="fb-hint">{tr('Tulis nama beserta gelar bila perlu. Nama ini akan tercetak di sertifikat.', 'Include any titles you want shown. This name will be printed on your certificate.')}</p>
+      <button className="btn btn-primary btn-block" disabled={!value.trim()}>
+        {tr('Lanjut', 'Continue')}
       </button>
       <Link className="fb-back" to="/">← {tr('Kembali ke beranda MSF 2026', 'Back to the MSF 2026 home page')}</Link>
     </form>
   )
 }
 
-function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
+function FormStep({ name, answers, setAnswers, onBack, onDone }) {
   const [missing, setMissing] = useState([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -320,10 +292,10 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
       if (!blank(v)) payload[q.key] = Array.isArray(v) ? v.map(clean) : clean(v)
       if (q.other && picked(q, answers)) payload[otherKey(q)] = clean(answers[otherKey(q)] ?? '')
     }
-    const { data, error } = await supabase.rpc('submit_feedback', { p_email: email, p_answers: payload })
+    const { data, error } = await supabase.rpc('submit_feedback_by_name', { p_name: name, p_answers: payload })
     setBusy(false)
     if (error) return setError(describeError(error))
-    if (data?.status !== 'done') return setError(tr('Email tidak ditemukan. Silakan mulai ulang.', 'Email not found. Please start again.'))
+    if (data?.status !== 'done') return setError(tr('Feedback gagal disimpan. Coba lagi.', 'Your feedback could not be saved. Please try again.'))
     onDone(data)
   }
 
@@ -332,10 +304,9 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
       <div className="fb-person">
         <div>
           <p className="fb-eyebrow">{tr('Mengisi sebagai', 'Answering as')}</p>
-          <h1>{person?.name}</h1>
-          {person?.organization && <p className="fb-org">{person.organization}</p>}
+          <h1>{name}</h1>
         </div>
-        <button type="button" className="btn-ghost" onClick={onBack}>{tr('Ganti email', 'Change email')}</button>
+        <button type="button" className="btn-ghost" onClick={onBack}>{tr('Ganti nama', 'Change name')}</button>
       </div>
 
       <p className="fb-hint">
@@ -432,7 +403,7 @@ function FormStep({ email, person, answers, setAnswers, onBack, onDone }) {
   )
 }
 
-function DoneStep({ result, already }) {
+function DoneStep({ result }) {
   const [cert, setCert] = useState(null)
   const [failed, setFailed] = useState(false)
 
@@ -456,12 +427,8 @@ function DoneStep({ result, already }) {
   return (
     <section className="fb-card fb-done">
       <span className="fb-done-check" aria-hidden="true">✓</span>
-      <h1>{already ? tr('Feedback Anda sudah kami terima', 'We already have your feedback') : tr('Terima kasih atas feedback Anda!', 'Thank you for your feedback!')}</h1>
-      <p className="fb-lead">
-        {already
-          ? tr(`Anda mengisi feedback pada ${formatTime(result.submitted_at)}. Sertifikat Anda tetap bisa diunduh.`, `You submitted feedback on ${formatTime(result.submitted_at)}. You can still download your certificate.`)
-          : tr('Sertifikat keikutsertaan Anda sudah siap.', 'Your certificate of participation is ready.')}
-      </p>
+      <h1>{tr('Terima kasih atas feedback Anda!', 'Thank you for your feedback!')}</h1>
+      <p className="fb-lead">{tr('Sertifikat keikutsertaan Anda sudah siap.', 'Your certificate of participation is ready.')}</p>
       <div className="fb-cert">
         {cert ? (
           <img src={cert.preview} alt={tr(`Sertifikat keikutsertaan atas nama ${result.name}`, `Certificate of participation for ${result.name}`)} />
