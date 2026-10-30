@@ -444,7 +444,8 @@ function DoneStep({ result, already }) {
       .then((c) => {
         if (!cancelled) setCert(c)
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Sertifikat gagal dibuat', err)
         if (!cancelled) setFailed(true)
       })
     return () => {
@@ -465,7 +466,11 @@ function DoneStep({ result, already }) {
         {cert ? (
           <img src={cert.preview} alt={tr(`Sertifikat keikutsertaan atas nama ${result.name}`, `Certificate of participation for ${result.name}`)} />
         ) : failed ? (
-          <p className="fb-hint">{tr('Sertifikat gagal dimuat. Periksa koneksi lalu muat ulang halaman ini.', 'The certificate could not be loaded. Check your connection and reload this page.')}</p>
+          <div className="fb-cert-error">
+            <p className="fb-hint">{tr('Sertifikat gagal dimuat. Periksa koneksi lalu coba lagi.', 'The certificate could not be loaded. Check your connection and try again.')}</p>
+            {/* Muat ulang halaman: status feedback tersimpan, dan versi aplikasi terbaru ikut terambil */}
+            <button type="button" className="btn btn-primary" onClick={() => window.location.reload()}>{tr('Coba lagi', 'Try again')}</button>
+          </div>
         ) : (
           <p className="fb-hint">{tr('Menyiapkan sertifikat…', 'Preparing certificate…')}</p>
         )}

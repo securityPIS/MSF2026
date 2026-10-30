@@ -767,6 +767,8 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .fb-cert { width: 100%; overflow: hidden; border-radius: 12px; background: #fff; box-shadow: 0 18px 40px rgba(2, 10, 40, 0.5); }
 .fb-cert img { display: block; width: 100%; height: auto; aspect-ratio: 1754 / 1240; }
 .fb-cert .fb-hint { padding: 3rem 1rem; color: var(--ocean-1); }
+.fb-cert-error { display: grid; justify-items: center; gap: 1rem; padding: 2.5rem 1rem; }
+.fb-cert-error .fb-hint { padding: 0; }
 
 /* Registrasi peserta (/register) */
 .rg-field { display: grid; gap: 0.35rem; font-weight: 600; font-size: 0.85rem; color: var(--muted); }
