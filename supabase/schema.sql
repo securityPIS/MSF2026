@@ -71,10 +71,12 @@ create table public.checkins (
 );
 create index checkins_participant_idx on public.checkins (participant_id);
 
--- Feedback peserta setelah acara (satu per peserta); diisi lewat fungsi submit_feedback
+-- Feedback peserta setelah acara; diisi lewat fungsi submit_feedback_by_name (nama saja, participant_id kosong)
+-- atau submit_feedback (email peserta, satu per peserta)
 create table public.feedback (
   id            bigint generated always as identity primary key,
-  participant_id uuid not null unique references public.participants(id) on delete cascade,
+  participant_id uuid unique references public.participants(id) on delete cascade,
+  name          text,
   answers       jsonb not null,
   submitted_at  timestamptz not null default now()
 );
@@ -346,11 +348,34 @@ begin
   where lower(btrim(email)) = v_email order by created_at limit 1;
   if not found then return jsonb_build_object('status', 'not_found'); end if;
 
-  insert into public.feedback (participant_id, answers) values (v_p.id, p_answers)
+  insert into public.feedback (participant_id, name, answers) values (v_p.id, v_p.full_name, p_answers)
   on conflict (participant_id) do nothing;
   select * into v_f from public.feedback where participant_id = v_p.id;
 
   return jsonb_build_object('status', 'done', 'name', v_p.full_name, 'organization', v_p.organization,
+                            'certificate_no', 'MSF2026-' || lpad(v_f.id::text, 4, '0'),
+                            'submitted_at', v_f.submitted_at);
+end $$;
+
+-- Simpan feedback atas nama yang diketik peserta (nama ini yang tercetak di sertifikat). Tiap kiriman = satu sertifikat.
+-- Dipakai halaman /feedback; tidak ada pengecekan ke data peserta.
+create or replace function public.submit_feedback_by_name(p_name text, p_answers jsonb)
+returns jsonb
+language plpgsql volatile security definer set search_path = public as $$
+declare
+  v_name text := regexp_replace(btrim(coalesce(p_name, '')), '\s+', ' ', 'g');
+  v_f public.feedback%rowtype;
+begin
+  if v_name = '' or char_length(v_name) > 120 then
+    raise exception 'Nama tidak valid' using errcode = '22023';
+  end if;
+  if p_answers is null or jsonb_typeof(p_answers) <> 'object' or pg_column_size(p_answers) > 20000 then
+    raise exception 'Jawaban tidak valid' using errcode = '22023';
+  end if;
+
+  insert into public.feedback (name, answers) values (v_name, p_answers) returning * into v_f;
+
+  return jsonb_build_object('status', 'done', 'name', v_name,
                             'certificate_no', 'MSF2026-' || lpad(v_f.id::text, 4, '0'),
                             'submitted_at', v_f.submitted_at);
 end $$;
@@ -473,6 +498,8 @@ revoke execute on function public.feedback_lookup(text) from public;
 revoke execute on function public.submit_feedback(text, jsonb) from public;
 grant  execute on function public.feedback_lookup(text) to anon, authenticated;
 grant  execute on function public.submit_feedback(text, jsonb) to anon, authenticated;
+revoke execute on function public.submit_feedback_by_name(text, jsonb) from public;
+grant  execute on function public.submit_feedback_by_name(text, jsonb) to anon, authenticated;
 revoke execute on function public.registration_open() from public;
 grant  execute on function public.registration_open() to anon, authenticated;
 revoke execute on function public.set_registration_open(boolean) from public, anon;
