@@ -14,7 +14,7 @@ import Participants from './pages/admin/Participants.jsx'
 import Import from './pages/admin/Import.jsx'
 import Checkpoints from './pages/admin/Checkpoints.jsx'
 import Staff from './pages/admin/Staff.jsx'
-import FeedbackSummary from './pages/admin/FeedbackSummary.jsx'
+import FeedbackSummary, { SharedFeedback } from './pages/admin/FeedbackSummary.jsx'
 import Home from './pages/home/Home.jsx'
 import Feedback from './pages/Feedback.jsx'
 import Register from './pages/Register.jsx'
@@ -48,6 +48,7 @@ export default function App() {
             <Route path="/p/:code" element={<ParticipantHistory />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/hasil-feedback/:token" element={<SharedFeedback />} />
             <Route
               element={
                 <RequireRole roles={['admin', 'officer']}>

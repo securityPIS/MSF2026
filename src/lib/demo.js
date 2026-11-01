@@ -489,6 +489,26 @@ const RPC = {
     return db.settings.feedback_menu_visible !== false
   },
 
+  feedback_share_token() {
+    if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh melihat link feedback')
+    return db.settings.feedback_share_token ?? null
+  },
+
+  set_feedback_share({ p_enabled }) {
+    if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh membagikan hasil feedback')
+    db.settings.feedback_share_token = p_enabled ? uid().replace(/-/g, '') : null
+    return db.settings.feedback_share_token
+  },
+
+  // Sama seperti fungsi database: tanpa nama pengisi
+  feedback_shared({ p_token }) {
+    const token = db.settings.feedback_share_token
+    if (!token || p_token !== token) return null
+    return [...db.feedback]
+      .sort((a, b) => compare(b.submitted_at, a.submitted_at))
+      .map((f) => ({ id: f.id, answers: clone(f.answers), submitted_at: f.submitted_at }))
+  },
+
   set_feedback_menu_visible({ p_visible }) {
     if (me()?.role !== 'admin') throw new Error('Hanya admin yang boleh mengubah menu feedback')
     db.settings.feedback_menu_visible = p_visible !== false
