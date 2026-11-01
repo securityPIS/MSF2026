@@ -13,7 +13,7 @@ import { L, OTHER, QUESTIONS, RATINGS, otherKey } from '../../lib/feedbackForm.j
 // Ringkasan isian /feedback: angka utama, distribusi tiap pertanyaan sesuai urutan formulir, dan jawaban terbuka.
 // Dua tampilan: petugas (/admin/feedback, baca tabel feedback lewat policy feedback_staff_select, plus unduh Excel
 // dan panel link berbagi untuk admin) dan publik read-only (/hasil-feedback/<token>, lewat fungsi feedback_shared,
-// tanpa nama pengisi).
+// tanpa unduh Excel).
 const PAGE_SIZE = 1000
 const TEXT_PAGE = 5
 const NPS_GROUPS = [
@@ -427,8 +427,8 @@ function SharePanel() {
         <h2>{tr('Bagikan hasil (read-only)', 'Share results (read-only)')}</h2>
         <p className="hint">
           {tr(
-            'Siapa pun yang punya link bisa melihat ringkasan ini tanpa login, tanpa bisa mengubah atau mengunduh data. Nama pengisi tidak ditampilkan.',
-            'Anyone with the link can view this summary without signing in, but cannot change or download the data. Respondent names are hidden.'
+            'Siapa pun yang punya link bisa melihat ringkasan ini tanpa login, termasuk nama pengisi di jawaban terbuka, tanpa bisa mengubah atau mengunduh data.',
+            'Anyone with the link can view this summary without signing in, including respondent names on open answers, but cannot change or download the data.'
           )}
         </p>
       </div>
