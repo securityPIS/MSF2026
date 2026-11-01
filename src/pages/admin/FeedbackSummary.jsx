@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { supabase } from '../../lib/supabase.js'
+import { useAuth } from '../../lib/auth.jsx'
+import { useConfirm } from '../../components/ConfirmDialog.jsx'
+import { FeedbackHeader } from '../Feedback.jsx'
 import { formatTime, pct } from '../../lib/format.js'
 import Pager from '../../components/Pager.jsx'
 import { locale, tr } from '../../lib/i18n.jsx'
 import { L, OTHER, QUESTIONS, RATINGS, otherKey } from '../../lib/feedbackForm.js'
 
-// Ringkasan isian /feedback: angka utama, distribusi tiap pertanyaan sesuai urutan formulir, jawaban terbuka,
-// dan unduh Excel. Data dibaca langsung dari tabel feedback (policy feedback_staff_select).
+// Ringkasan isian /feedback: angka utama, distribusi tiap pertanyaan sesuai urutan formulir, dan jawaban terbuka.
+// Dua tampilan: petugas (/admin/feedback, baca tabel feedback lewat policy feedback_staff_select, plus unduh Excel
+// dan panel link berbagi untuk admin) dan publik read-only (/hasil-feedback/<token>, lewat fungsi feedback_shared,
+// tanpa nama pengisi).
 const PAGE_SIZE = 1000
 const TEXT_PAGE = 5
 const NPS_GROUPS = [
@@ -74,7 +80,7 @@ function summarize(rows) {
       out.questions[q.key] = { n: answered, items, others: [...others.values()].sort((a, b) => b.count - a.count) }
     } else if (q.type === 'text') {
       const list = rows
-        .map((r) => ({ id: r.id, name: nameOf(r), at: r.submitted_at, text: otherText(r.answers?.[q.key]) }))
+        .map((r) => ({ id: r.id, name: r.name || r.participant?.full_name || '', at: r.submitted_at, text: otherText(r.answers?.[q.key]) }))
         .filter((x) => x.text)
       out.questions[q.key] = { n: list.length, list }
     }
@@ -108,6 +114,16 @@ function exportExcel(rows) {
 }
 
 export default function FeedbackSummary() {
+  const { profile } = useAuth()
+  return (
+    <FeedbackReport fetchRows={fetchAll} exportable>
+      {profile?.role === 'admin' && <SharePanel />}
+    </FeedbackReport>
+  )
+}
+
+// Ringkasan feedback; fetchRows mengembalikan baris feedback (id, answers, submitted_at, name opsional)
+function FeedbackReport({ fetchRows, exportable = false, children }) {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -116,14 +132,14 @@ export default function FeedbackSummary() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setRows(await fetchAll())
+      setRows(await fetchRows())
       setError('')
       setUpdated(new Date())
     } catch (e) {
       setError(e.message)
     }
     setLoading(false)
-  }, [])
+  }, [fetchRows])
 
   useEffect(() => {
     load()
@@ -153,9 +169,10 @@ export default function FeedbackSummary() {
         </div>
         <div className="actions">
           <button className="btn" onClick={load} disabled={loading}>{loading ? tr('Memuat…', 'Loading…') : tr('Muat ulang', 'Refresh')}</button>
-          <button className="btn" onClick={() => exportExcel(rows)} disabled={!rows.length}>{tr('Unduh Excel', 'Download Excel')}</button>
+          {exportable && <button className="btn" onClick={() => exportExcel(rows)} disabled={!rows.length}>{tr('Unduh Excel', 'Download Excel')}</button>}
         </div>
       </div>
+      {children}
       {error && <p className="notice error">{tr('Gagal memuat ulang', 'Could not refresh')}: {error}</p>}
       {updated && <p className="hint fbs-updated">{tr('Diperbarui', 'Updated')} {formatTime(updated.toISOString())} · {tr('otomatis tiap menit', 'refreshes every minute')}</p>}
 
@@ -346,12 +363,167 @@ function Texts({ s }) {
           <li key={x.id}>
             <p>{x.text}</p>
             <small>
-              {x.name} · <time>{formatTime(x.at)}</time>
+              {x.name && `${x.name} · `}
+              <time>{formatTime(x.at)}</time>
             </small>
           </li>
         ))}
       </ul>
       <Pager page={page} total={s.n} pageSize={TEXT_PAGE} onChange={setPage} />
     </>
+  )
+}
+
+const migrationMissing = (e) => e?.code === 'PGRST202' || /Could not find the function|function .* does not exist/i.test(e?.message ?? '')
+
+// Admin: buat, salin, ganti, atau hentikan link publik read-only
+function SharePanel() {
+  const confirm = useConfirm()
+  const [token, setToken] = useState(undefined) // undefined = memuat, null = tidak dibagikan
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+  const url = token ? `${window.location.origin}/hasil-feedback/${token}` : ''
+
+  const fail = (e) =>
+    setError(
+      migrationMissing(e)
+        ? tr('Fitur link berbagi belum aktif: jalankan migrasi 20261101000000_feedback_share.sql di Supabase.', 'Sharing is not active yet: run migration 20261101000000_feedback_share.sql in Supabase.')
+        : e.message
+    )
+
+  useEffect(() => {
+    supabase.rpc('feedback_share_token').then(({ data, error }) => {
+      if (error) {
+        fail(error)
+        setToken(null)
+      } else setToken(data ?? null)
+    })
+  }, [])
+
+  async function set(enabled, ask) {
+    if (ask && !(await confirm(ask))) return
+    setBusy(true)
+    setError('')
+    setCopied(false)
+    const { data, error } = await supabase.rpc('set_feedback_share', { p_enabled: enabled })
+    setBusy(false)
+    if (error) return fail(error)
+    setToken(data ?? null)
+  }
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+    } catch {
+      document.getElementById('fbs-share-url')?.select() // clipboard diblokir: pilih teks supaya bisa disalin manual
+    }
+  }
+
+  return (
+    <section className="panel fbs-share">
+      <div>
+        <h2>{tr('Bagikan hasil (read-only)', 'Share results (read-only)')}</h2>
+        <p className="hint">
+          {tr(
+            'Siapa pun yang punya link bisa melihat ringkasan ini tanpa login, tanpa bisa mengubah atau mengunduh data. Nama pengisi tidak ditampilkan.',
+            'Anyone with the link can view this summary without signing in, but cannot change or download the data. Respondent names are hidden.'
+          )}
+        </p>
+      </div>
+      {token === undefined ? (
+        <p className="hint">{tr('Memuat…', 'Loading…')}</p>
+      ) : token ? (
+        <>
+          <div className="fbs-share-row">
+            <input id="fbs-share-url" readOnly value={url} onFocus={(e) => e.target.select()} aria-label={tr('Link berbagi', 'Share link')} />
+            <button className="btn btn-primary" onClick={copy}>{copied ? tr('Tersalin ✓', 'Copied ✓') : tr('Salin link', 'Copy link')}</button>
+          </div>
+          <div className="actions">
+            <a className="btn" href={url} target="_blank" rel="noreferrer">{tr('Buka', 'Open')}</a>
+            <button
+              className="btn"
+              disabled={busy}
+              onClick={() => set(true, {
+                title: tr('Buat link baru?', 'Create a new link?'),
+                body: tr('Link lama langsung tidak berlaku. Bagikan ulang link baru ke yang membutuhkan.', 'The old link stops working immediately. Share the new link again with those who need it.'),
+                confirmLabel: tr('Buat link baru', 'Create new link'),
+              })}
+            >
+              {tr('Buat link baru', 'New link')}
+            </button>
+            <button
+              className="btn btn-danger"
+              disabled={busy}
+              onClick={() => set(false, {
+                title: tr('Hentikan berbagi?', 'Stop sharing?'),
+                body: tr('Link yang sudah dibagikan tidak bisa dibuka lagi.', 'The shared link will no longer open.'),
+                confirmLabel: tr('Hentikan', 'Stop sharing'),
+                danger: true,
+              })}
+            >
+              {tr('Hentikan berbagi', 'Stop sharing')}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="actions">
+          <button className="btn btn-primary" disabled={busy || Boolean(error)} onClick={() => set(true)}>
+            {busy ? tr('Membuat…', 'Creating…') : tr('Buat link berbagi', 'Create share link')}
+          </button>
+        </div>
+      )}
+      {error && <p className="form-error" role="alert">{error}</p>}
+    </section>
+  )
+}
+
+// Halaman publik /hasil-feedback/<token>: tanpa login, hanya baca
+export function SharedFeedback() {
+  const { token } = useParams()
+  const [state, setState] = useState('ok') // ok | invalid | inactive
+
+  const fetchShared = useCallback(async () => {
+    const { data, error } = await supabase.rpc('feedback_shared', { p_token: token })
+    if (error) {
+      if (migrationMissing(error)) setState('inactive')
+      throw error
+    }
+    if (data == null) {
+      setState('invalid')
+      return []
+    }
+    setState('ok')
+    return data
+  }, [token])
+
+  useEffect(() => {
+    const prev = document.title
+    document.title = 'Feedback summary · Maritime Security Forum 2026'
+    return () => {
+      document.title = prev
+    }
+  }, [])
+
+  return (
+    <div className="fb fbs-public">
+      <FeedbackHeader />
+      {state === 'ok' ? (
+        <FeedbackReport fetchRows={fetchShared} />
+      ) : (
+        <main className="fb-main">
+          <section className="fb-card">
+            <h1>{tr('Link tidak berlaku', 'This link is not valid')}</h1>
+            <p className="fb-lead">
+              {state === 'inactive'
+                ? tr('Fitur berbagi hasil feedback belum aktif. Silakan hubungi panitia.', 'Sharing feedback results is not active yet. Please contact the organisers.')
+                : tr('Link ringkasan feedback ini sudah dihentikan atau diganti. Minta link terbaru ke panitia.', 'This feedback summary link has been stopped or replaced. Ask the organisers for the latest link.')}
+            </p>
+            <Link className="fb-back" to="/">← {tr('Ke beranda MSF 2026', 'Go to the MSF 2026 home page')}</Link>
+          </section>
+        </main>
+      )}
+    </div>
   )
 }

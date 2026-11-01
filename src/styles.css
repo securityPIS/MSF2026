@@ -860,6 +860,13 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .fbs-texts li { padding: 0.7rem 0.85rem; border-radius: var(--r); background: rgba(3, 16, 58, 0.45); }
 .fbs-texts p { margin: 0 0 0.25rem; white-space: pre-line; overflow-wrap: anywhere; }
 .fbs-texts small { color: var(--faint); font-size: 0.75rem; }
+.fbs-share { display: grid; gap: 0.75rem; margin-bottom: 1.5rem; }
+.fbs-share h2 { margin: 0 0 0.25rem; font-size: 1rem; }
+.fbs-share .hint { margin: 0; }
+.fbs-share-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; }
+.fbs-share-row input { min-width: 0; padding: 0.65rem 0.8rem; border: 1px solid var(--border-strong); border-radius: var(--r); background: var(--field); color: var(--text); font: inherit; font-size: 0.85rem; }
+.fbs-share .form-error { margin: 0; }
+.fbs-public .page { padding-top: 0.5rem; }
 /* Tooltip saat kursor/fokus di atas bar */
 .fbs [data-tip]:hover::after, .fbs [data-tip]:focus-visible::after {
   content: attr(data-tip); position: absolute; z-index: 5; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
