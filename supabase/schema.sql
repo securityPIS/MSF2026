@@ -467,7 +467,7 @@ begin
   return v_token;
 end $$;
 
--- Isian feedback untuk link publik: hanya jawaban dan waktu, tanpa nama pengisi. Null bila token salah atau dihentikan.
+-- Isian feedback untuk link publik: nama pengisi, jawaban, dan waktu. Null bila token salah atau dihentikan.
 create or replace function public.feedback_shared(p_token text)
 returns jsonb
 language plpgsql stable security definer set search_path = public as $$
@@ -478,9 +478,11 @@ begin
     return null;
   end if;
   return coalesce((
-    select jsonb_agg(jsonb_build_object('id', f.id, 'answers', f.answers, 'submitted_at', f.submitted_at)
+    select jsonb_agg(jsonb_build_object('id', f.id, 'name', coalesce(f.name, p.full_name),
+                                        'answers', f.answers, 'submitted_at', f.submitted_at)
                      order by f.submitted_at desc)
-    from public.feedback f), '[]'::jsonb);
+    from public.feedback f
+    left join public.participants p on p.id = f.participant_id), '[]'::jsonb);
 end $$;
 
 -- ---------- Registrasi peserta (halaman publik /register, tanpa login) ----------

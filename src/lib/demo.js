@@ -500,13 +500,13 @@ const RPC = {
     return db.settings.feedback_share_token
   },
 
-  // Sama seperti fungsi database: tanpa nama pengisi
+  // Sama seperti fungsi database feedback_shared
   feedback_shared({ p_token }) {
     const token = db.settings.feedback_share_token
     if (!token || p_token !== token) return null
     return [...db.feedback]
       .sort((a, b) => compare(b.submitted_at, a.submitted_at))
-      .map((f) => ({ id: f.id, answers: clone(f.answers), submitted_at: f.submitted_at }))
+      .map((f) => ({ id: f.id, name: f.name ?? db.participants.find((p) => p.id === f.participant_id)?.full_name ?? null, answers: clone(f.answers), submitted_at: f.submitted_at }))
   },
 
   set_feedback_menu_visible({ p_visible }) {
